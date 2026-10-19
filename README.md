@@ -4,7 +4,7 @@
 
 **Play it:** https://happydestiny79.github.io/florida-trailblazers/
 
-The site is the [`game/`](game/) folder (`index.html`, `style.css`, and `js/`). There is no build step and no external assets. Paths inside the game are relative, so it works at that GitHub Pages subpath. GitHub Actions publishes the `game/` folder on every push to `main`.
+The site is the [`game/`](game/) folder (`index.html`, `style.css`, `js/`, and `assets/img/`). There is no build step. Paths inside the game are relative, so it works at that GitHub Pages subpath. `CREDITS.md` and `FACT_CHECK.md` ship with the published folder. GitHub Actions publishes the `game/` folder on every push to `main`.
 
 ## If the site does not appear after the first merge
 

@@ -20,7 +20,16 @@ var SRC = {
   npsSanLuisNHL: "https://npgallery.nps.gov/GetAsset/67d92cf2-58d6-4530-b79d-4b182a00beae",
   paiva: "https://digitalcommons.usf.edu/cgi/viewcontent.cgi?article=1028&context=early_visions_bucket",
   dosBrief: "https://dos.fl.gov/florida-facts/florida-history/a-brief-history/",
-  standards: "https://flrules.org/gateway/reference.asp?No=Ref-19653"
+  standards: "https://flrules.org/gateway/reference.asp?No=Ref-19653",
+  /* added in v2 */
+  npsCityGate: "https://www.nps.gov/places/000/city-gate.htm",
+  dosCapitol: "https://dos.fl.gov/florida-facts/florida-history/the-capitol/",
+  dosTerritorial: "https://dos.fl.gov/florida-facts/florida-history/a-brief-history/territorial-period",
+  treaty1819: "https://avalon.law.yale.edu/19th_century/sp1819.asp",
+  quarryNRHP: "https://en.wikipedia.org/wiki/Spanish_Coquina_Quarries",
+  usgsMap: "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer",
+  npsFortCaroline: "https://www.nps.gov/timu/planyourvisit/index.htm",
+  mslAppx: "https://missionsanluis.org/learn/history/"
 };
 
 var FACTS = {
@@ -64,6 +73,15 @@ var FACTS = {
   sanluisToday: { text: "Today Mission San Luis is a history museum with rebuilt buildings, including the council house, church, friary, and fort.", src: [SRC.npsSanLuisNHL] },
   /* ---------- Geography ---------- */
   geoMoseNorth: { text: "Fort Mose is about 2 miles north of St. Augustine.", src: [SRC.npsMoseAA, SRC.flmnhMose] },
-  geoWest: { text: "Tallahassee (Mission San Luis) is west and a little north of St. Augustine, about 180 miles away in a straight line. Tallahassee is Florida's state capital.", src: [SRC.dosBrief], flag: "The 180-mile figure is my own straight-line (great-circle) calculation from coordinates (St. Augustine 29.898 N, 81.312 W; Mission San Luis 30.446 N, 84.319 W) and came out to about 184 miles. Driving distance is longer. Tallahassee as state capital is common knowledge; the DOS source covers Florida's state history, not the capital directly." },
-  geoAnastasia: { text: "The coquina stone for the Castillo was cut on Anastasia Island, across the bay to the east of St. Augustine.", src: [SRC.npsCoquina], flag: "NPS says coquina was quarried \"in the area of present-day Anastasia State Park on Anastasia Island.\" Calling it \"east across the bay\" is my own map reading." }
+  geoWest: { text: "Tallahassee (Mission San Luis) is west and a little north of St. Augustine, about 180 miles away in a straight line (\"as the crow flies\"). The drive is longer. Tallahassee is Florida's state capital.", src: [SRC.dosBrief, SRC.dosCapitol],
+    note: "VERIFIED in v2 by calculation: the great-circle (haversine) distance from the Castillo (29.8979 N, 81.3115 W) to Mission San Luis (30.4457 N, 84.3190 W) is 183.6 miles, which rounds to about 180 (tools/playtest_v2.py recomputes it). Wording changed from \"about 180 miles\" to \"about 180 miles in a straight line\" so it is not confused with driving distance. Tallahassee is the capital per the Florida Department of State." },
+  geoAnastasia: { text: "The coquina stone for the Castillo was cut from quarries on Anastasia Island, in the area of today's Anastasia State Park. The island lies just east of St. Augustine, across Matanzas Bay. The old quarries are southeast of the Castillo, about 3 miles away.", src: [SRC.npsCoquina, SRC.quarryNRHP, SRC.usgsMap],
+    note: "VERIFIED/REWORDED in v2. NPS: coquina was quarried \"in the area of present-day Anastasia State Park on Anastasia Island.\" On the USGS aerial map used in the game, Anastasia Island is directly east of the Castillo across Matanzas Bay. The Spanish Coquina Quarries (NRHP #72001462, 29.8706 N, 81.2753 W) are about 1.9 miles south and 2.2 miles east of the Castillo, so v1's \"east\" is now \"southeast, about 3 miles\" for the quarries and \"east\" only for the island." },
+  /* ---------- added in v2 ---------- */
+  coquinaFormed: { text: "Coquina formed over thousands of years as the shells of tiny coquina clams piled up and were naturally glued together into a kind of limestone. \"Coquina\" is Spanish for \"tiny shell.\"", src: [SRC.npsCoquina] },
+  cityGate: { text: "A gate in St. Augustine's north wall opened in 1739. The coquina pillars of the City Gate that stand today were built in 1808.", src: [SRC.npsCityGate, SRC.npsBrochure] },
+  capital1824: { text: "In 1824, Tallahassee was chosen as Florida's capital, mostly because it was about halfway between St. Augustine and Pensacola, the two main cities.", src: [SRC.dosCapitol, SRC.dosTerritorial] },
+  historicCapitol: { text: "Florida's brick Capitol was finished in 1845 and is now the Historic Capitol museum. The 22-story Capitol tower behind it was finished in 1977.", src: [SRC.dosCapitol] },
+  treaty1819: { text: "In 1819, Spain and the United States signed a treaty (the Adams-Onís Treaty). In Article II, the King of Spain \"cedes\" (gives) East and West Florida to the United States. The treaty took effect in 1821.", src: [SRC.treaty1819] },
+  fortCarolineToday: { text: "No one knows exactly where the French Fort Caroline stood. The fort at Fort Caroline National Memorial in Jacksonville is a smaller model built in 1964 from old drawings.", src: [SRC.npsFortCaroline] }
 };
