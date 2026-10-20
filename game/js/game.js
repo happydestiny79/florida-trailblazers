@@ -1,4 +1,4 @@
-/* Florida Trailblazers v2 — game engine (plain JS, no build step, works offline). */
+/* Florida Trailblazers v3 — game engine (v3 add-ons live in js/v3.js and plug in through the V3 hooks below) (plain JS, no build step, works offline). */
 (function () {
   "use strict";
   var app, S;
@@ -92,12 +92,13 @@
     if (correct) { L.ok = true; L.ms = Date.now() - L.t0; SFX.play("correct"); if (L.tries >= 3) award("persist"); }
     else { SFX.play("wrong"); if (wrongLabel && L.wrong.length < 8) L.wrong.push(strip(String(wrongLabel)).slice(0, 80)); }
     if (L.tries >= 3 && !L.ok) L.stuck = true;
+    if (window.V3) V3.onAttempt(id, !!correct);
     checkBadges(); save(); return L; }
   function firstTry(id) { return S.log[id] && S.log[id].first === true; }
 
   /* ---------- badges ---------- */
   function award(id) { if (!S || S.badges.indexOf(id) >= 0) return; S.badges.push(id); var b = BADGES.filter(function (x) { return x.id === id; })[0];
-    SFX.play("badge"); toast('<span class="toast-badge">' + b.icon + '</span> Badge earned: <b>' + b.name + '</b>', "badge"); }
+    SFX.play("badge"); toast('<span class="toast-badge">' + b.icon + '</span> Badge earned: <b>' + b.name + '</b>', "badge"); if (window.V3) V3.onBadge(id); }
   function checkBadges(final) {
     if (S.clues.length) award("firstclue");
     if (S.clues.indexOf("c_greenhat") >= 0) award("sharpeye");
@@ -120,7 +121,7 @@
     return '<header class="hud"><button class="hud-title" id="menu" aria-label="Menu">☰ <span class="lbl">' + esc(GAME_TITLE) + '</span></button>' + ch +
       '<div class="stats"><div class="stat" title="Coins">🪙 <b id="coins">' + S.coins + '</b></div>' +
       '<div class="stat" title="Energy">⚡ <b>' + S.energy + '</b></div>' +
-      '<div class="stat' + late + '" title="Day">📅 <b>' + S.day + '</b>/' + START.deadline + '</div></div>' + snack +
+      (S.relaxed ? '<div class="stat" title="Day (relaxed mode: no deadline)">📅 <b>' + S.day + '</b></div></div>' : '<div class="stat' + late + '" title="Day">📅 <b>' + S.day + '</b>/' + START.deadline + '</div></div>') + snack + (window.V3 ? V3.hudExtra(sc) : "") +
       '<div class="hud-tools"><button class="hud-btn" id="nb" aria-label="Detective Notebook">📓<span class="lbl"> Notebook</span> <span class="count">' + S.clues.length + '</span></button>' +
       '<button class="hud-btn" id="mapbtn" aria-label="Case map">🗺️<span class="lbl"> Map</span></button>' +
       '<button class="hud-btn icon" id="read" aria-label="Read this page aloud" title="Read aloud">🗣️</button>' + soundBtn() + '</div></header>'; }
@@ -131,10 +132,10 @@
     var e = document.getElementById("eat"); if (e) e.onclick = function () { S.items.snack--; S.energy = clamp(S.energy + 3, 0, 10); SFX.play("pop"); toast("Yum! +3 energy"); save(); render(); };
     var m = document.getElementById("menu"); if (m) m.onclick = function () { modal("Menu", "<p>Your case is saved automatically on this device.</p>",
       [{ label: "Keep playing" }, { label: "📜 Credits", cls: "ghost", fn: function () { credits(render); } }, { label: "🏠 Title screen", cls: "ghost", fn: title }], { escClose: true }); };
-    wireSound();
+    wireSound(); if (window.V3) V3.wireHudExtra();
   }
   function caseMap() {
-    modal("🗺️ Case Map: Your Trail", '<div class="map-mini">' + ART.floridaMap({ current: S.loc, visited: S.visited, trail: S.trail }) + '</div><p class="small">The gold line fills in as you travel. ✔ = places you have searched. Stops: ' +
+    modal("🗺️ Case Map: Your Trail", '<div class="map-mini">' + ART.floridaMap({ current: S.loc, visited: S.visited, trail: S.trail, villain: window.V3 ? V3.pennyLoc() : null }) + '</div><p class="small">The gold line fills in as you travel. ✔ = places you have searched. Stops: ' +
       S.trail.map(function (id) { return LOCATIONS[id].name; }).join(" → ") + '</p>', [{ label: "Close map" }], { escClose: true, cls: "wide" }); }
 
   /* ---------- vocabulary pop-ups ---------- */
@@ -237,6 +238,7 @@
       '<section class="panel" aria-labelledby="scene-title"><h2 id="scene-title" tabindex="-1">' + sc.title + '</h2>' + inner + partnerHtml(sc) + '</section></main>';
     var cc = app.querySelector(".cap-chip"); if (cc) cc.onclick = function () { imageInfo(cc.getAttribute("data-img")); };
     wirePartner(sc); decorate(app.querySelector(".panel"));
+    if (window.V3) V3.afterFrame(sc);
   }
   function nextBtn(label, fn, where) { var c = where || document.getElementById("ch"); c.innerHTML = ""; var n = el('<button class="btn primary choice" id="next">' + label + '</button>');
     n.onclick = function () { SFX.play("click"); fn(); }; c.appendChild(n); n.focus({ preventScroll: true }); return n; }
@@ -252,17 +254,18 @@
       return '<li class="gl-item">' + (v.img && IMAGES[v.img] ? '<img src="' + thumb(v.img) + '" alt="" loading="lazy">' : '<span class="gl-noimg" aria-hidden="true">📘</span>') + '<div><b>' + esc(v.word) + '</b><br>' + esc(v.def) + '</div></li>'; }).join("") ||
       "<li><i>Tap the <span class='vocab demo'>dotted words</span> in the story to collect them here.</i></li>";
     var bd = BADGES.map(function (b) { var got = S.badges.indexOf(b.id) >= 0; return '<li class="badge' + (got ? " got" : "") + '"><span class="b-ic" aria-hidden="true">' + (got ? b.icon : "🔒") + '</span><div><b>' + b.name + '</b>' + (got ? " ✔" : "") + '<br><span class="small">' + b.desc + '</span></div></li>'; }).join("");
-    var tabs = [["clues", "Clues", S.clues.length], ["sus", "Suspects"], ["facts", "Facts", S.facts.length], ["glossary", "Glossary", S.glossary.length], ["badges", "Badges", S.badges.length]];
+    var tabs = [["clues", "Clues", S.clues.length], ["sus", "Dossiers"], ["facts", "Facts", S.facts.length], ["glossary", "Glossary", S.glossary.length], ["badges", "Badges", S.badges.length]];
     tab = tab || "clues";
     modal("📓 Detective Notebook",
       '<div class="nb-tabs" role="tablist">' + tabs.map(function (t) { return '<button class="tab" role="tab" data-t="' + t[0] + '">' + t[1] + (t[2] != null ? " (" + t[2] + ")" : "") + '</button>'; }).join("") + '</div>' +
       '<div class="nb-pane" data-p="clues"><h3>Where is the thief going?</h3><ul>' + place + '</ul><h3>Who is the thief?</h3><ul>' + sus + '</ul></div>' +
-      '<div class="nb-pane" data-p="sus"><p>Compare these (made-up) suspects with your clues.</p><div class="sus-grid-mini">' + suspects + '</div></div>' +
+      '<div class="nb-pane" data-p="sus">' + (window.V3 ? V3.dossierHtml() : '<p>Compare these (made-up) suspects with your clues.</p><div class="sus-grid-mini">' + suspects + '</div>') + '</div>' +
       '<div class="nb-pane" data-p="facts"><ul class="facts">' + facts + '</ul></div>' +
       '<div class="nb-pane no-vocab" data-p="glossary"><ul class="glossary">' + gl + '</ul></div>' +
       '<div class="nb-pane no-vocab" data-p="badges"><ul class="badges">' + bd + '</ul></div>', [{ label: "Close notebook" }], { escClose: true, cls: "wide", noFocus: true });
     var show = function (t) { document.querySelectorAll("#modal .tab").forEach(function (x) { var on = x.getAttribute("data-t") === t; x.classList.toggle("on", on); x.setAttribute("aria-selected", on); });
       document.querySelectorAll("#modal .nb-pane").forEach(function (p) { p.classList.toggle("hidden", p.getAttribute("data-p") !== t); }); };
+    if (window.V3) V3.wireDossiers(document.getElementById("modal"));
     show(tab); document.querySelectorAll("#modal .tab").forEach(function (t) { t.onclick = function () { show(t.getAttribute("data-t")); }; });
     var first = document.querySelector("#modal .tab.on"); if (first) first.focus();
   }
@@ -276,7 +279,8 @@
       [{ label: "Rest and continue", fn: function () { S.day += 1; S.energy = 3; save(); then(); } }]);
   }
   function go(id) { stopSpeak(); closeVocab(true); var prev = SCENES[S.scene]; S.scene = id; var sc = SCENES[id]; enter(sc); save(); render(); window.scrollTo(0, 0);
-    if (sc && prev && sc.chapter && sc.chapter !== prev.chapter && CHAPTERS[sc.chapter]) chapterBanner(sc.chapter); }
+    if (sc && prev && sc.chapter && sc.chapter !== prev.chapter && CHAPTERS[sc.chapter]) chapterBanner(sc.chapter);
+    if (window.V3) V3.afterGo(prev, sc, id); }
   function chapterBanner(n) { SFX.play("travel"); document.querySelectorAll(".chapter-banner").forEach(function (x) { x.remove(); }); var b = el('<div class="chapter-banner" role="status"><div>' + CHAPTERS[n].name + '</div><small>Level: ' + CHAPTERS[n].level + '</small></div>');
     document.body.appendChild(b); setTimeout(function () { b.classList.add("show"); }, 20); setTimeout(function () { b.classList.remove("show"); setTimeout(function () { b.remove(); }, 500); }, 2200); }
   function enter(sc) { if (!sc) return; if (sc.loc && LOCATIONS[sc.loc]) S.loc = sc.loc;
@@ -290,6 +294,7 @@
   function render() {
     closeVocab(true); var sc = SCENES[S.scene]; if (!sc) { title(); return; }
     var t = sc.type || "story";
+    if (window.V3 && V3.scenes[t]) return V3.scenes[t](sc);
     if (t === "story") return storyScene(sc);
     if (t === "q") return qScene(sc);
     if (t === "hub") return hubScene(sc);
@@ -566,7 +571,7 @@
 
   function travelTo(sc, id, t, how) {
     applyEffect({ coins: -t.coins, days: t.days, energy: -t.energy }); addUnique(S.visited, id); S.trail.push(id); S.loc = id; SFX.play("travel"); save();
-    modal("🧳 Traveling to " + LOCATIONS[id].name, '<div class="map-mini">' + ART.floridaMap({ current: id, trail: S.trail, visited: S.visited, animate: true }) + '</div><p>' + how + '</p>',
+    modal("🧳 Traveling to " + LOCATIONS[id].name, '<div class="map-mini">' + ART.floridaMap({ current: id, trail: S.trail, visited: S.visited, animate: true, villain: window.V3 ? V3.pennyLoc() : null }) + '</div><p>' + how + '</p>',
       [{ label: "Arrive ➜", fn: function () { checkTired(function () { go(sc.next); }); } }], { cls: "wide" }); }
   function decoyTrip(sc, id) {
     var pay = Math.min(3, S.coins), L = LOCATIONS[id], from = S.loc; S.decoys++; applyEffect({ coins: -pay, days: 1, energy: -1 }); S.trail.push(id); S.trail.push(from); addUnique(S.visited, id); save();
@@ -676,7 +681,7 @@
   function scoreRun(st) { var pts = 0, n = 0;
     Object.keys(st.log || {}).forEach(function (k) { var L = st.log[k]; if (!L.tries) return; n++;
       pts += L.revealed ? 0.2 : L.first && !L.hints ? 1 : L.first ? 0.8 : L.tries === 2 ? 0.6 : 0.4; });
-    var s = n ? pts / n * 100 : 0; s -= (st.decoys || 0) * 3; if (st.day > START.deadline) s -= 10; if (st.deduceTries > 1) s -= 4 * (st.deduceTries - 1);
+    var s = n ? pts / n * 100 : 0; s -= (st.decoys || 0) * 3; if (st.day > START.deadline && !st.relaxed) s -= 10; if (st.deduceTries > 1) s -= 4 * (st.deduceTries - 1);
     return Math.round(clamp(s, 0, 100)); }
   function rankFor(score) { var r = RANKS[0]; RANKS.forEach(function (x) { if (score >= x.min) r = x; }); return r; }
   function winScene(sc) {
@@ -685,6 +690,7 @@
     var first = qs.filter(function (k) { return S.log[k].first; }).length, stuck = qs.filter(function (k) { return S.log[k].stuck; }).length;
     var onTime = S.day <= START.deadline, mins = Math.max(1, Math.round((Date.now() - S.started) / 60000));
     saveReport({ rank: rank.name, score: score });
+    var v3win = window.V3 ? V3.onWin(score, rank) : { html: "" };
     var learned = ["Ponce de León named <b>la Florida</b> in 1513, and explorers like de Soto searched for gold and silver.",
       "<b>St. Augustine</b> (1565) is the oldest permanent European settlement in the continental U.S. Spain, France, and England all wanted Florida.",
       "The <b>Timucua</b> and <b>Apalachee</b> both grew corn, beans, and squash. Colonization brought disease and hard changes to Native peoples.",
@@ -696,13 +702,14 @@
     var badges = BADGES.map(function (b) { var got = S.badges.indexOf(b.id) >= 0; return '<div class="badge-tile' + (got ? " got" : "") + '" title="' + esc(b.desc) + '"><span aria-hidden="true">' + (got ? b.icon : "🔒") + '</span><b>' + b.name + '</b><small>' + b.desc + '</small></div>'; }).join("");
     app.innerHTML = photoBg("sl_council", 2) + '<main class="win scene"><div class="photo-gap">' + captionChip("sl_council") + '</div><section class="panel center" aria-labelledby="wint"><h1 id="wint">🏆 Case Closed!</h1>' +
       '<div class="rank" aria-label="Detective rank: ' + rank.name + '"><div class="rank-ic" aria-hidden="true">' + rank.icon + '</div><div><div class="rank-lbl">Your detective rank</div><div class="rank-name">' + rank.name + '</div><div class="small">' + rank.msg + ' (case score ' + score + '/100)</div></div></div>' +
-      '<p>You recovered the <b>Founding Stone</b> and caught <b>Penny Pinch</b>!' + (onTime ? "" : " (Phew, the thief was just about to leave Florida!)") + '</p>' +
+      '<p>You recovered the <b>Founding Stone</b> and caught <b>Penny Pinch</b>!' + (onTime || S.relaxed ? "" : " (Phew, the thief was just about to leave Florida!)") + '</p>' + v3win.html +
       '<div class="win-stats"><div>📅 Finished on Day <b>' + S.day + '</b>' + (onTime ? " ⭐ on time" : "") + '</div><div>✅ First-try answers: <b>' + first + '/' + qs.length + '</b></div><div>🔍 ' + PARTNER_NAME + '\'s questions used: <b>' + S.hintsUsed + '</b></div>' +
       '<div>🔎 Accusations: <b>' + S.deduceTries + '</b></div><div>🪙 Coins left: <b>' + S.coins + '</b> • 🚫 Wrong-way trips: <b>' + S.decoys + '</b></div><div>📚 Glossary words: <b>' + S.glossary.length + '</b> • ⏱ About ' + mins + ' min</div></div>' +
       (stuck ? '<p class="small">' + PARTNER_NAME + ' noted ' + stuck + ' tricky question' + (stuck > 1 ? "s" : "") + ' for your teacher. That\'s how detectives get better!</p>' : "") +
       '<h2>Badges (' + S.badges.length + ' of ' + BADGES.length + ')</h2><div class="badge-grid">' + badges + '</div>' +
       '<h2>What you learned</h2><ul class="learned">' + learned.map(function (l) { return "<li>" + l + "</li>"; }).join("") + '</ul>' +
       '<div class="btn-row"><button class="btn primary big" id="again">▶ Play again</button><button class="btn" id="home">Title screen</button><button class="btn ghost" id="wcred">📜 Credits</button></div></section></main>';
+    if (window.V3) V3.wireWin();
     document.getElementById("again").onclick = function () { newCase(); };
     document.getElementById("home").onclick = title; document.getElementById("wcred").onclick = function () { credits(title); };
     var cc = app.querySelector(".cap-chip"); if (cc) cc.onclick = function () { imageInfo("sl_council"); };
@@ -710,7 +717,8 @@
   }
 
   /* ---------- title ---------- */
-  function newCase() { var prev = S && S.name;
+  function newCase() { if (window.V3) { V3.newCase(function (name, team) { clearSave(); S = fresh(); S.name = String(name || "").trim().slice(0, 40); V3.initState(S, team); enter(SCENES.intro); save(); render(); }); return; }
+    var prev = S && S.name;
     modal("🕵️ New case", '<p>What should we call you, detective? <span class="small">(Optional. First name or a nickname only. It is saved only on this device so your teacher can see your progress.)</span></p>' +
       '<label class="typed-lbl" for="pname">Detective name</label><input id="pname" type="text" maxlength="24" autocomplete="off" value="' + esc(prev || "") + '">',
       [{ label: "▶ Start the case", cls: "primary", fn: function () { start(nm); } }, { label: "Cancel", cls: "ghost" }], { escClose: true, noFocus: true });
@@ -722,7 +730,7 @@
     app.innerHTML = photoBg("castillo_aerial", 1) + '<main class="title-screen"><div class="title-card"><div class="title-kicker">🔎 A Florida history mystery</div><h1>' + esc(GAME_TITLE) + '</h1><h2>' + esc(GAME_SUBTITLE) + '</h2>' +
       '<p>A junior history detective adventure for 3rd and 4th graders. Travel to real places in early Florida, read real sources, collect clues, and catch the thief!</p>' +
       '<div class="btn-col"><button class="btn big primary" id="new">▶ New case</button>' + (canContinue ? '<button class="btn big" id="cont">⏯ Continue case' + (sv.name ? " (" + esc(sv.name) + ")" : "") + '</button>' : "") +
-      '<button class="btn" id="teacher">🍎 Teacher view</button><div class="btn-row2"><button class="btn ghost" id="about">About</button><button class="btn ghost" id="credits">📜 Credits</button>' + soundBtn() + '</div></div>' +
+      (window.V3 ? V3.titleButtons() : "") + '<button class="btn" id="teacher">🍎 Teacher view</button><div class="btn-row2"><button class="btn ghost" id="about">About</button><button class="btn ghost" id="credits">📜 Credits</button>' + soundBtn() + '</div></div>' +
       '<p class="small">Version ' + esc(GAME_VERSION) + ' • Works offline • Sound is off until you turn it on</p></div>' + captionChip("castillo_aerial") + '</main>';
     document.getElementById("new").onclick = newCase;
     if (canContinue) document.getElementById("cont").onclick = function () { S = sv; render(); };
@@ -730,6 +738,7 @@
     document.getElementById("credits").onclick = function () { credits(title); };
     document.getElementById("about").onclick = function () { modal("About " + esc(GAME_TITLE), "<p>The Founding Stone, the thief, the suspects, Detective " + PARTNER_NAME + ", the rangers and the guides are <b>made up</b>.</p><p>The places are real, and so are the photos and old maps. The history and geography facts come from the National Park Service, Florida State Parks, the Florida Department of State, Mission San Luis, and the Florida Museum. See FACT_CHECK.md for sources and CREDITS.md (or the Credits screen) for every picture.</p><p>Everything is stored in the game folder, so no internet is needed.</p>", [{ label: "OK" }], { escClose: true }); };
     wireSound(); var cc = app.querySelector(".cap-chip"); if (cc) cc.onclick = function () { imageInfo("castillo_aerial"); };
+    if (window.V3) V3.wireTitle();
   }
 
   /* ---------- credits ---------- */
@@ -780,7 +789,8 @@
     app.innerHTML = '<main class="teacher"><div class="teacher-head"><h1>🍎 Teacher View: ' + esc(GAME_SUBTITLE) + '</h1>' +
       '<div><button class="btn" id="print">🖨 Print</button> <button class="btn primary" id="back">← Back to title</button></div></div>' +
       '<p><b>Grades 3–4. Social Studies + ELA Reading.</b> Social Studies benchmark wording is copied exactly from <i>Florida\'s State Academic Standards – Social Studies, 2026</i> (Rule 6A-1.09401, F.A.C.). ELA wording is copied exactly from <a href="' + ELA_SOURCE.url + '" target="_blank" rel="noopener">' + esc(ELA_SOURCE.title) + '</a>. Play time: about 25–35 minutes.</p>' +
-      '<nav class="t-nav"><a href="#t-stuck">Where students got stuck</a> • <a href="#t-ss">Social Studies</a> • <a href="#t-ela">ELA Reading</a> • <a href="#t-key">Answer key</a></nav>' +
+      (window.V3 ? V3.teacherHtml() : "") +
+      '<nav class="t-nav"><a href="#t-class">Class, leaderboard &amp; share codes</a> • <a href="#t-stuck">Where students got stuck</a> • <a href="#t-ss">Social Studies</a> • <a href="#t-ela">ELA Reading</a> • <a href="#t-key">Answer key</a></nav>' +
       '<h2 id="t-stuck">🔍 Where students got stuck (records on this device)</h2>' +
       '<p class="small">Detective ' + PARTNER_NAME + ' logs every question: tries, partner questions (hints) used, wrong answers, and whether the student got stuck (3+ wrong tries, or used “Show me”). Records stay in this browser only (localStorage) and are not sent anywhere. ' + R.length + ' play record' + (R.length === 1 ? "" : "s") + ' on this device.</p>' +
       '<div class="btn-row left"><button class="btn" id="csv"' + (R.length ? "" : " disabled") + '>⬇ Export CSV</button><button class="btn ghost" id="clear"' + (R.length ? "" : " disabled") + '>🗑 Clear records</button></div>' +
@@ -807,6 +817,7 @@
     var csv = document.getElementById("csv"); if (csv && R.length) csv.onclick = function () { downloadCsv(R); };
     var clr = document.getElementById("clear"); if (clr && R.length) clr.onclick = function () { modal("Clear all play records?", "<p>This removes every student record stored in this browser. It can't be undone.</p>",
       [{ label: "Yes, clear records", fn: function () { try { localStorage.removeItem(REPORT_KEY); } catch (e) {} teacherView(); } }, { label: "Cancel", cls: "ghost" }], { escClose: true }); };
+    if (window.V3) V3.wireTeacher();
     window.scrollTo(0, 0);
   }
   function csvCell(v) { v = String(v == null ? "" : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
@@ -821,6 +832,10 @@
 
   /* expose a tiny API for automated play-testing */
   window.FTB = { state: function () { return S; }, go: go, title: title, teacher: teacherView, credits: credits, notebook: notebook, csv: function () { return buildCsv(reports()); },
-    checkTyped: checkTyped, score: function () { return scoreRun(S); }, newCase: function (name) { clearSave(); S = fresh(); S.name = name || ""; enter(SCENES.intro); save(); render(); } };
+    checkTyped: checkTyped, score: function () { return scoreRun(S); }, newCase: function (name, team) { clearSave(); S = fresh(); S.name = name || ""; if (window.V3) V3.initState(S, team); enter(SCENES.intro); save(); render(); } };
+  /* internals for the v3 add-ons (js/v3.js) */
+  window.FTBX = { S: function () { return S; }, setS: function (x) { S = x; }, app: function () { return app; }, el: el, esc: esc, strip: strip, modal: modal, closeModal: closeModal, toast: toast, frame: frame, go: go, render: render, save: save,
+    award: award, attempt: attempt, qlog: qlog, nextBtn: nextBtn, fb: fb, decorate: decorate, img: img, thumb: thumb, wireHud: wireHud, partnerWrong: partnerWrong, notebook: notebook, title: title, teacher: teacherView,
+    reports: reports, scoreRun: scoreRun, rankFor: rankFor, BADGES: BADGES, RANKS: RANKS, bindAct: bindAct, hash: hash, shuffled: shuffled, clamp: clamp, addUnique: addUnique, imageInfo: imageInfo, caseMap: caseMap, checkTired: checkTired };
   window.addEventListener("DOMContentLoaded", function () { app = document.getElementById("app"); document.title = GAME_TITLE + " — " + GAME_SUBTITLE; wireVocabGlobal(); title(); });
 })();
