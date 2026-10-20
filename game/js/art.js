@@ -51,6 +51,11 @@ var ART = (function () {
         (vis ? '<circle cx="' + (mx + 13) + '" cy="' + (my - 13) + '" r="9" fill="#2a9d8f" stroke="#fff" stroke-width="2"/><path d="M' + (mx + 9) + ' ' + (my - 13) + ' l3 3 l6 -6" stroke="#fff" stroke-width="2.5" fill="none"/>' : "") +
         (opts.current === id ? '<circle cx="' + mx + '" cy="' + my + '" r="22" fill="none" stroke="#ffb703" stroke-width="4" class="pulse"/>' : "") +
         (id === "sanluis" ? '<text class="map-label" x="' + mx + '" y="' + (my + 36) + '" text-anchor="middle" font-size="21">Tallahassee<tspan x="' + mx + '" dy="20" font-size="16">(Mission San Luis)</tspan></text>' : label(lx, my + 7, L.label, anchor)) + '</g>'; });
+    /* v3: Penny's escape marker (only on non-clickable maps, so it never gives away a map answer) */
+    if (opts.villain && !opts.clickable && LOCATIONS[opts.villain]) { var vp = locPt(opts.villain), cur = locPt(opts.current || "staug");
+      s += '<g class="villain-mark" aria-label="Penny Pinch escaped toward ' + LOCATIONS[opts.villain].name + '"><line x1="' + cur[0] + '" y1="' + cur[1] + '" x2="' + vp[0] + '" y2="' + vp[1] + '" stroke="#d62828" stroke-width="4" stroke-dasharray="3 9" stroke-linecap="round"/>' +
+        '<circle cx="' + vp[0] + '" cy="' + (vp[1] - 44) + '" r="20" fill="#7b3fa0" stroke="#fff" stroke-width="3"/><text x="' + vp[0] + '" y="' + (vp[1] - 37) + '" font-size="20" text-anchor="middle">☂️</text>' +
+        '<text class="map-label" x="' + vp[0] + '" y="' + (vp[1] - 72) + '" text-anchor="middle" font-size="17" fill="#ffd6e0">Penny escaped here!</text></g>'; }
     s += compass(815, 300);
     var sx = 60, sy = 462, w = PX_PER_100MI;
     s += '<g class="scalebar" aria-hidden="true"><rect x="' + (sx - 14) + '" y="' + (sy - 40) + '" width="' + (2 * w + 56) + '" height="68" rx="10" fill="rgba(255,255,255,.9)"/>' +

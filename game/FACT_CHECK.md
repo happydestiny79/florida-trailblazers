@@ -1,17 +1,35 @@
-# FACT_CHECK (v2): Florida Trailblazers, Case 1: The Stolen Founding Stone
+# FACT_CHECK (v3): Florida Trailblazers, Case 1: The Stolen Founding Stone
 
 Generated on 2026-10-19 from `game-v2/js/facts.js`, `data.js`, `images.js` and `benchmarks.js` by `tools/make_docs_v2.js`. Claims are shown in the exact wording players see in the Notebook. Scene dialogue paraphrases them.
 
 **44 claims** (the 38 from v1 plus 6 new ones: `coquinaFormed`, `cityGate`, `capital1824`, `historicCapitol`, `treaty1819`, `fortCarolineToday`). **0 open flags.** Both v1 flags were checked and resolved (see "Resolved v1 flags"). Every source is free and needs no login.
 
-## Resolved v1 flags
+## New in v3 (read this first)
+v3 adds **no new historical claims to the Notebook**: every fact a player can earn in an interview, riddle or clue scene points to one of the sourced claims in the table below. Dialogue that restates history was checked against those claims:
+
+| Where | Exact player-facing words | Backed by |
+|---|---|---|
+| Ranger Rosa interview | "Coquina! It's soft and spongy, so cannonballs sank in instead of cracking the walls." | `coquina1702` |
+| Ranger Dee interview | "It was the first legally sanctioned free Black settlement in what is now the United States." | `moseFirst` |
+| Guide Tomás interview | "Apalachee people and Spanish people lived here together, from 1656 to 1704." | `sanluisPeople`, `sanluisCapital` (1656), `sanluis1704` |
+| Guide Tomás follow-up | "Huge! About 120 feet across. Council houses like it could hold up to 3,000 people!" | `councilHouse` (120 feet); <https://missionsanluis.org/learn/thatch> ("Similar buildings around the Southeast were said to hold up to 3,000 people"); NPS NHL nomination (<https://npgallery.nps.gov/GetAsset/67d92cf2-58d6-4530-b79d-4b182a00beae>: "some held between 2000 and 3000 people") |
+| Penny's riddle 1 (SS.4.A.3.3) | Spain founded St. Augustine in 1565; oldest permanent European settlement in the continental U.S. | `menendez1565`, `oldest` |
+| Penny's riddle 2 (SS.4.G.1.2) | Tallahassee was chosen as Florida's capital in 1824. Hint: Florida became a U.S. territory in 1821. | `capital1824`, `flags` |
+| Penny's riddle 3 (SS.4.A.3.7) | Spain, France and England (Britain) all wanted to control Florida; Britain took control in 1763. | `flags`, `fortCaroline` |
+| Founding Stone dust scene | "Pedro Menéndez de Avilés founded St. Augustine in 1565, which makes it the oldest permanent European settlement in the continental United States." | `menendez1565`, `oldest` |
+| Torn-map puzzle | Uses the 1763 Gibson map of St. Augustine (`gibson1763`, LOC, public domain); only the caption already checked below is shown. | image caption |
+
+**Judgment calls in v3:** the riddle-2 hint ("only a few years later than 1821") is a reasoning hint, not a claim. "Sank in" is a kid-friendly paraphrase of "absorbed".
+
+
 - **geoWest**: VERIFIED in v2 by calculation: the great-circle (haversine) distance from the Castillo (29.8979 N, 81.3115 W) to Mission San Luis (30.4457 N, 84.3190 W) is 183.6 miles, which rounds to about 180 (tools/playtest_v2.py recomputes it). Wording changed from "about 180 miles" to "about 180 miles in a straight line" so it is not confused with driving distance. Tallahassee is the capital per the Florida Department of State.
   - Current wording: "Tallahassee (Mission San Luis) is west and a little north of St. Augustine, about 180 miles away in a straight line ("as the crow flies"). The drive is longer. Tallahassee is Florida's state capital."
 - **geoAnastasia**: VERIFIED/REWORDED in v2. NPS: coquina was quarried "in the area of present-day Anastasia State Park on Anastasia Island." On the USGS aerial map used in the game, Anastasia Island is directly east of the Castillo across Matanzas Bay. The Spanish Coquina Quarries (NRHP #72001462, 29.8706 N, 81.2753 W) are about 1.9 miles south and 2.2 miles east of the Castillo, so v1's "east" is now "southeast, about 3 miles" for the quarries and "east" only for the island.
   - Current wording: "The coquina stone for the Castillo was cut from quarries on Anastasia Island, in the area of today's Anastasia State Park. The island lies just east of St. Augustine, across Matanzas Bay. The old quarries are southeast of the Castillo, about 3 miles away."
 
 ## Made-up parts (not historical claims)
-- The Founding Stone, the thief (Penny Pinch), the other suspects, Detective Sam, Professor Pelican, Ranger Rosa, Ranger Dee, Guide Tomás and the park volunteer are fictional. The game is set **today** at real historic sites, so no historical person is given invented dialogue.
+- The Founding Stone, the thief (Penny Pinch), the other suspects (Rusty Hinges, Captain Fogbottom, Lulu Larceny), Detective Sam, Professor Pelican, Ranger Rosa, Ranger Dee, Guide Tomás and the park volunteer (Mr. Okafor) are fictional. v3 portraits are original AI-generated paintings of these fictional people and are not based on any real person.
+- v3 game parts are made up too: the witness clues (wet-umbrella drips, the purple pen, the bus question, the plaza question), suspect alibis and dossiers, the arrest warrant, Penny's riddle notes and escape route, the torn map and the "Founding Stone" inscription, and the speed bonus. The game is set **today** at real historic sites, so no historical person is given invented dialogue.
 - Coins, shop prices, the shuttle/bus/supply-truck options and the "Day 4" deadline are game mechanics.
 - The thief "buried the Stone like the bells". Only the bell burial is historical (see `bellsBuried`).
 - Suspects appear as gray case-file silhouettes. No real person is depicted as a character. Native people are not depicted. Photos show places, landscapes, rebuilt buildings, maps and objects.

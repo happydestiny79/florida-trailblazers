@@ -1,4 +1,4 @@
-# CREDITS: Florida Trailblazers v2
+# CREDITS: Florida Trailblazers v3
 
 Generated on 2026-10-19 from `game-v2/js/images.js` by `tools/make_docs_v2.js`. Every picture is public domain, CC0, CC BY or CC BY-SA. No copyrighted images are used. The same credits appear on the in-game **Credits** screen (title screen → 📜 Credits).
 
@@ -52,6 +52,14 @@ Generated on 2026-10-19 from `game-v2/js/images.js` by `tools/make_docs_v2.js`. 
 - Treaty quotation: Adams-Onís Treaty (1819), Article II, transcription by The Avalon Project, Yale Law School Lillian Goldman Law Library. <https://avalon.law.yale.edu/19th_century/sp1819.asp> (treaty text is public domain).
 - "Freedom at Fort Mose", "Life at Mission San Luis" and "Text B" were written for this game from the facts cited in FACT_CHECK.md.
 - Standards wording: Florida Department of Education, Rule 6A-1.09401, F.A.C. (Social Studies 2026, Ref-19653; B.E.S.T. ELA 2025, Ref-18865).
+
+## v3: character portraits (painted), avatars and clue scenes
+- **Character portraits** (`assets/img/chars/*.webp`, 10 characters x 5 expressions + thumbnails, and the wanted-poster paper `poster_bg.webp`): **original AI-generated art made for this project**, in a painted graphic-novel style. They depict **fictional people** (Professor Pelican, Ranger Rosa, Ranger Dee, Mr. Okafor, Guide Tomás, Detective Sam, Penny Pinch, Rusty Hinges, Captain Fogbottom, Lulu Larceny), not any real person. Made with the Grok Imagine image tool from a project style reference (`art-src/penny_style_ref.jpg`, supplied by the project owner); each expression was generated from that character's own neutral image. Full-size originals are in `art-src/` (not shipped in the game). Changes: resized to 450x600 and a 150x200 thumbnail, WebP quality 65-68.
+- **SVG fallback portraits** (`js/portrait.js`, `js/characters.js`): drawn in code for this game; used only if a painted image is missing.
+- **Detective avatar parts** (skins, hair, hijab, glasses, hearing aid, outfits, hats, gear): the same self-made SVG engine, with a painted paper texture and soft shading added in CSS (an SVG noise filter drawn in code) so avatars sit closer to the painted cast.
+- **Dust layer** on the Founding Stone: generated live on a canvas.
+- **Hotspot / magnifier scene** uses the existing `castillo_room` photo (credited above). **Torn-map puzzle** slices the existing `gibson1763` map (Library of Congress, public domain) with CSS.
+- Nothing was bought or added from third parties for v3.
 
 ## Sound
 All sound effects are synthesized live in the browser with the Web Audio API (`js/sound.js`). No audio files and no third-party audio are used. Sound is off by default.
