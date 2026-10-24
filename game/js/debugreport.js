@@ -237,13 +237,13 @@
   }
 
   function hideReportUi() {
-    if (btnEl) btnEl.style.visibility = "hidden";
-    if (panelEl && panelEl.parentNode) panelEl.parentNode.style.visibility = "hidden";
+    if (btnEl) btnEl.style.display = "none";
+    if (panelEl && panelEl.parentNode) panelEl.parentNode.style.display = "none";
   }
 
   function showReportUi() {
-    if (btnEl) btnEl.style.visibility = "";
-    if (panelEl && panelEl.parentNode) panelEl.parentNode.style.visibility = "";
+    if (btnEl) btnEl.style.display = "";
+    if (panelEl && panelEl.parentNode) panelEl.parentNode.style.display = "";
   }
 
   function closePanel() {
@@ -365,6 +365,9 @@
           scale: Math.min(window.devicePixelRatio || 1, 2),
           windowWidth: document.documentElement.scrollWidth,
           windowHeight: document.documentElement.scrollHeight,
+          ignoreElements: function (el) {
+            return el.classList && (el.classList.contains("dbg-report-btn") || el.classList.contains("dbg-report-backdrop"));
+          },
         });
       })
       .catch(function () {
