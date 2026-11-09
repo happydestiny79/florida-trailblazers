@@ -1,4 +1,4 @@
-FLORIDA TRAILBLAZERS: Case 1, The Stolen Founding Stone (version 3.0)
+FLORIDA TRAILBLAZERS: Case 1, The Stolen Founding Stone (version 4.0 preview)
 
 HOW TO PLAY
   Double-click index.html. It opens in any modern browser (Chrome/Chromebook, Edge, Firefox, Safari),
@@ -6,6 +6,14 @@ HOW TO PLAY
   in the browser. You can also serve the folder (for example: python3 -m http.server) and open
   http://localhost:8000/
   Sound effects are made live by the browser (no audio files) and start OFF; use the speaker button.
+
+WHAT'S NEW IN V4 PREVIEW
+  - Local Flavor arrival postcards at all 7 real map places (22 verified-license photographs).
+  - Swipeable place albums; tappable vocabulary; on-tap photo attribution and photo credits.
+  - Rotating witness clues tied to the real chase destinations.
+  - Optional Spot it: +2 exploration points once per stop, without changing the case score.
+  - Preserves the temporary teacher Report button: append ?debug to the page URL.
+  - Preview only: see LOCAL_FLAVOR_NOTES.md for scope, factual sources and review instructions.
 
 WHAT'S NEW IN V3
   - Portraits with 5 expressions for every character (painted portraits: original AI-generated art of made-up people).
@@ -16,7 +24,7 @@ WHAT'S NEW IN V3
   - Hands-on clue scenes: tap-to-search hotspots with a magnifying glass, a torn map to rebuild,
     and dust to wipe off the Founding Stone. Touch, mouse and keyboard all work.
   - Penny Pinch leaves riddle notes tied to the standards and shows where she escaped on the map.
-    Finish early for a speed bonus. Teachers can switch on Relaxed mode (no timer, no bonus).
+    Finish early for a speed bonus. Teachers can switch on Relaxed mode (no timer, no race bonus).
   - Detective avatar builder; badges unlock costume pieces. Rank and gear save on this device.
   - Class features with no server: class list (first names/nicknames), weekly leaderboard,
     team mode (2-3 partners take turns), and share codes to merge scores from several devices.

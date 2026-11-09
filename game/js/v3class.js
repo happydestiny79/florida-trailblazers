@@ -12,9 +12,9 @@
   function board(weekOnly) { var all = V3.scores(), ws = weekStart(); return all.filter(function (e) { return !weekOnly || e.at >= ws; }).sort(function (a, b) { return b.total - a.total || a.day - b.day || a.at - b.at; }); }
   function boardHtml(weekOnly, limit) { var rows = board(weekOnly).slice(0, limit || 20);
     if (!rows.length) return '<p class="small"><i>No finished cases ' + (weekOnly ? "this week" : "yet") + '. Finish a case to get on the board!</i></p>';
-    return '<div class="tscroll"><table class="bench lb"><thead><tr><th>#</th><th>Detective(s)</th><th>Total</th><th>Case score</th><th>Speed bonus</th><th>Rank</th><th>Finished</th></tr></thead><tbody>' + rows.map(function (e, i) {
+    return '<div class="tscroll"><table class="bench lb"><thead><tr><th>#</th><th>Detective(s)</th><th>Total</th><th>Case score</th><th>Bonus</th><th>Rank</th><th>Finished</th></tr></thead><tbody>' + rows.map(function (e, i) {
       var who = e.who.map(function (n) { return '<span class="lb-who">' + V3.avatarFace(n, i === 0 ? "happy" : "neutral", "mini") + esc(n) + '</span>'; }).join(" ");
-      return '<tr' + (i < 3 ? ' class="top' + (i + 1) + '"' : "") + '><td>' + (["🥇", "🥈", "🥉"][i] || i + 1) + '</td><td>' + (e.team ? "👥 " : "") + who + (e.dev !== V3.deviceId() ? ' <span class="pill">imported</span>' : "") + '</td><td><b>' + e.total + '</b></td><td>' + e.score + '</td><td>' + (e.relaxed ? "relaxed" : "+" + e.bonus) + '</td><td>' + esc(X().RANKS[e.rank || 0].name) + '</td><td class="small">' + new Date(e.at).toLocaleDateString() + '</td></tr>'; }).join("") + '</tbody></table></div>'; }
+      return '<tr' + (i < 3 ? ' class="top' + (i + 1) + '"' : "") + '><td>' + (["🥇", "🥈", "🥉"][i] || i + 1) + '</td><td>' + (e.team ? "👥 " : "") + who + (e.dev !== V3.deviceId() ? ' <span class="pill">imported</span>' : "") + '</td><td><b>' + e.total + '</b></td><td>' + e.score + '</td><td>' + ("+" + e.bonus) + '</td><td>' + esc(X().RANKS[e.rank || 0].name) + '</td><td class="small">' + new Date(e.at).toLocaleDateString() + '</td></tr>'; }).join("") + '</tbody></table></div>'; }
 
   /* ---------- share codes (compact text, made on this device; nothing is sent anywhere) ---------- */
   function b64u(str) { return btoa(unescape(encodeURIComponent(str))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
@@ -31,14 +31,15 @@
     var all = V3.scores(), have = {}, added = 0, skipped = 0; all.forEach(function (e) { have[e.id] = 1; });
     data.e.forEach(function (r) { if (!Array.isArray(r) || have[r[0]]) { skipped++; return; }
       var who = String(r[1] || "").split("|").map(function (n) { var c = V3.checkName(n); return c.ok ? c.name : null; }).filter(Boolean).slice(0, 3);
-      var sc = +r[3], bo = +r[4]; if (!who.length || !(sc >= 0 && sc <= 100) || !(bo >= 0 && bo <= 30)) { skipped++; return; }
+      // Maximum bonus: speed 10 + riddles 15 + seven Local Flavor stops 14 = 39.
+      var sc = +r[3], bo = +r[4]; if (!who.length || !(sc >= 0 && sc <= 100) || !(bo >= 0 && bo <= 39)) { skipped++; return; }
       all.push({ id: String(r[0]).slice(0, 40), who: who, team: !!r[2], score: sc, bonus: bo, total: sc + bo, rank: Math.max(0, Math.min(4, +r[5] || 0)), at: (+r[6] || 0) * 60000, day: +r[7] || 0, relaxed: !!r[8], dev: String(r[9] || data.d).slice(0, 12) }); have[r[0]] = 1; added++; });
     V3.saveScores(all); var c = V3.cls(); all.forEach(function (e) { e.who.forEach(function (n) { if (c.roster.map(function (x) { return x.toLowerCase(); }).indexOf(n.toLowerCase()) < 0 && c.roster.length < 40) c.roster.push(n); }); }); V3.saveCls(c);
     return { ok: true, added: added, skipped: skipped }; }
 
   /* ---------- win: race bonus, rewards, leaderboard entry ---------- */
   V3.onWin = function (score, rank) { var st = V3.ensure(), R = st.v3.riddles, firsts = Object.keys(R).filter(function (k) { return R[k].first; }).length;
-    var speed = st.relaxed ? 0 : (st.day <= 3 ? 10 : st.day <= START.deadline ? 5 : 0), bonus = st.relaxed ? 0 : speed + firsts * 5, total = score + bonus;
+    var speed = st.relaxed ? 0 : (st.day <= 3 ? 10 : st.day <= START.deadline ? 5 : 0), exploration = st.localFlavor ? st.localFlavor.bonus || 0 : 0, bonus = (st.relaxed ? 0 : speed + firsts * 5) + exploration, total = score + bonus;
     var who = V3.players().length ? V3.players() : ["Guest"], newGear = [];
     if (!st.v3.scored) { st.v3.scored = true; var all = V3.scores();
       all.push({ id: st.runId, who: who, team: !!st.team, score: score, bonus: bonus, total: total, rank: rankIdx(rank.name), at: Date.now(), day: st.day, relaxed: !!st.relaxed, dev: V3.deviceId() }); V3.saveScores(all);
@@ -50,6 +51,7 @@
     var team = st.team ? '<div class="team-sum"><h3>👥 Team results</h3>' + st.team.map(function (n) { var T = st.teamStats[n] || {}; return '<div class="tm">' + V3.avatarFace(n, "happy", "mini") + '<b>' + esc(n) + '</b>: solved ' + (T.right || 0) + ' • first-try ' + (T.first || 0) + '</div>'; }).join("") + '</div>' : "";
     var html = '<div class="race-sum">' + (st.relaxed ? '<p>🌴 Relaxed mode: no race. Your case score is <b>' + score + '</b>.</p>' :
       '<p>🏁 <b>Race against Penny:</b> speed bonus <b>+' + speed + '</b> (Day ' + st.day + ') • riddles on the first try <b>' + firsts + '/3</b> (+' + firsts * 5 + ')</p><p class="total">Leaderboard total: <b>' + total + '</b> = ' + score + ' + ' + bonus + '</p>') +
+      '<p>📷 Local Flavor exploration: <b>+' + exploration + '</b> points (part of your leaderboard bonus).</p>' +
       '<div class="win-avatars">' + who.filter(function (n) { return n !== "Guest"; }).map(function (n) { return '<div>' + V3.avatarFace(n, "happy", "med") + '<div class="small">' + esc(n) + '</div></div>'; }).join("") + '</div>' +
       (newGear.length ? '<p class="unlock">🎁 New costume pieces: <b>' + newGear.map(esc).join(", ") + '</b>. Try them on in 🧑 My Detective!</p>' : "") + team +
       '<div class="btn-row"><button class="btn" id="wlb">🏆 Class leaderboard</button><button class="btn ghost" id="wav">🧑 My Detective</button></div></div>';
@@ -126,7 +128,7 @@
   function classScreen(back) { var week = true;
     function draw() { app().innerHTML = '<main class="teacher classroom"><div class="teacher-head"><h1>🏆 Class Leaderboard</h1><button class="btn primary" id="cback">← Back</button></div>' +
       '<div class="seg"><button class="tab' + (week ? " on" : "") + '" id="wk" aria-pressed="' + week + '">This week</button><button class="tab' + (!week ? " on" : "") + '" id="all" aria-pressed="' + !week + '">All time</button></div>' + boardHtml(week) +
-      '<p class="small">Total = case score (how well you solved problems) + speed bonus (racing Penny). Ranks come from the case score only. 🔒 Scores stay on this device unless your teacher shares a code.</p>' + teamHelp() + '</main>';
+      '<p class="small">Total = case score (how well you solved problems) + race and Local Flavor exploration bonuses. Ranks come from the case score only. 🔒 Scores stay on this device unless your teacher shares a code.</p>' + teamHelp() + '</main>';
       document.getElementById("cback").onclick = back; document.getElementById("wk").onclick = function () { week = true; draw(); }; document.getElementById("all").onclick = function () { week = false; draw(); }; window.scrollTo(0, 0); }
     draw(); }
   function teamHelp() { return '<h2>👥 Team mode</h2><p>Start a <b>New case</b> and choose <b>Team</b>. Pick 2 or 3 partners. Everyone shares one case on one device and takes turns. A banner shows whose turn it is, and the turn passes after each solved problem. Team scores count for every partner.</p>'; }

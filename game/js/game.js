@@ -166,7 +166,7 @@
     clearTimeout(vTimer); if (pinned) clearTimeout(hoverT); closeVocab(true); vTrig = trig; vPinned = pinned;
     var isNew = addUnique(S.glossary, id);
     vpop = el('<div class="vpop" id="vpop" role="dialog" aria-label="Meaning of ' + esc(v.word) + '">' +
-      '<button class="vpop-x" aria-label="Close">✕</button>' + (v.img && IMAGES[v.img] ? '<img src="' + thumb(v.img) + '" alt="' + esc(IMAGES[v.img].alt) + '">' : "") +
+      '<button class="vpop-x" aria-label="Close">✕</button>' + (v.photo ? '<img src="' + esc(v.photo) + '" alt="' + esc(v.word) + ' — see Local Flavor for photo credit">' : v.img && IMAGES[v.img] ? '<img src="' + thumb(v.img) + '" alt="' + esc(IMAGES[v.img].alt) + '">' : "") +
       '<div class="vpop-txt"><b class="vpop-word">' + esc(v.word) + '</b><p>' + esc(v.def) + '</p><div class="vpop-note">📚 ' + (isNew ? "Added to your Glossary!" : "In your Glossary") + '</div></div></div>');
     if (!pinned) vpop.classList.add("preview");
     document.body.appendChild(vpop);
@@ -239,6 +239,7 @@
     var cc = app.querySelector(".cap-chip"); if (cc) cc.onclick = function () { imageInfo(cc.getAttribute("data-img")); };
     wirePartner(sc); decorate(app.querySelector(".panel"));
     if (window.V3) V3.afterFrame(sc);
+    if (window.LocalFlavor) LocalFlavor.afterFrame(sc);
   }
   function nextBtn(label, fn, where) { var c = where || document.getElementById("ch"); c.innerHTML = ""; var n = el('<button class="btn primary choice" id="next">' + label + '</button>');
     n.onclick = function () { SFX.play("click"); fn(); }; c.appendChild(n); n.focus({ preventScroll: true }); return n; }
@@ -251,7 +252,7 @@
     var facts = S.facts.map(function (f) { return "<li>" + FACTS[f].text + "</li>"; }).join("") || "<li><i>Facts you learn will appear here.</i></li>";
     var suspects = SUSPECTS.map(function (s) { return '<div class="sus-mini">' + ART.suspect(s, 70) + '<div><b>' + s.name + '</b><br>🎩 ' + s.hat + '<br>🎒 ' + s.carry + '<br>✒️ ' + s.ink + '</div></div>'; }).join("");
     var gl = S.glossary.slice().sort(function (a, b) { return VOCAB[a].word.localeCompare(VOCAB[b].word); }).map(function (id) { var v = VOCAB[id];
-      return '<li class="gl-item">' + (v.img && IMAGES[v.img] ? '<img src="' + thumb(v.img) + '" alt="" loading="lazy">' : '<span class="gl-noimg" aria-hidden="true">📘</span>') + '<div><b>' + esc(v.word) + '</b><br>' + esc(v.def) + '</div></li>'; }).join("") ||
+      return '<li class="gl-item">' + (v.photo ? '<img src="' + esc(v.photo) + '" alt="' + esc(v.word) + ' — see Local Flavor for photo credit">' : v.img && IMAGES[v.img] ? '<img src="' + thumb(v.img) + '" alt="" loading="lazy">' : '<span class="gl-noimg" aria-hidden="true">📘</span>') + '<div><b>' + esc(v.word) + '</b><br>' + esc(v.def) + '</div></li>'; }).join("") ||
       "<li><i>Tap the <span class='vocab demo'>dotted words</span> in the story to collect them here.</i></li>";
     var bd = BADGES.map(function (b) { var got = S.badges.indexOf(b.id) >= 0; return '<li class="badge' + (got ? " got" : "") + '"><span class="b-ic" aria-hidden="true">' + (got ? b.icon : "🔒") + '</span><div><b>' + b.name + '</b>' + (got ? " ✔" : "") + '<br><span class="small">' + b.desc + '</span></div></li>'; }).join("");
     var tabs = [["clues", "Clues", S.clues.length], ["sus", "Dossiers"], ["facts", "Facts", S.facts.length], ["glossary", "Glossary", S.glossary.length], ["badges", "Badges", S.badges.length]];
@@ -579,8 +580,9 @@
     var pic = I ? '<figure class="modal-photo"><img src="' + img(L.img) + '" alt="' + esc(I.alt) + '"><figcaption>' + esc(I.caption) + ' <span class="small">(' + esc(I.author.split(",")[0]) + ', ' + esc(I.license) + ')</span></figcaption></figure>' : "";
     var fact = L.fact && FACTS[L.fact] ? '<p class="bonus">📚 While you\'re here: ' + FACTS[L.fact].text + '</p>' : "";
     if (L.fact) addUnique(S.facts, L.fact);
-    modal("🚫 No trail in " + L.name, pic + "<p>You spent a day and " + pay + " coins getting to " + L.name + " and back. Nobody here has seen a red umbrella or purple ink.</p>" + fact + "<p><b>Re-read your clue:</b> " + sc.text + "</p>",
-      [{ label: "Back to the map", fn: function () { checkTired(render); } }]); }
+    modal("🚫 No trail in " + L.name, (window.LocalFlavor ? LocalFlavor.panel(id, true) : pic) + "<p>You spent a day and " + pay + " coins getting to " + L.name + " and back. Nobody here has seen a red umbrella or purple ink.</p>" + fact + "<p><b>Re-read your clue:</b> " + sc.text + "</p>",
+      [{ label: "Back to the map", fn: function () { checkTired(render); } }], { cls: "wide" });
+    if (window.LocalFlavor) LocalFlavor.wire(document.getElementById("modal")); }
   function mapScene(sc) {
     var tc = sc.target === "sanluis" && S.travelChoice ? TRAVEL_WEST.filter(function (t) { return t.id === S.travelChoice; })[0] : null;
     var hint = S.items.map ? '<button class="btn sm" id="hint">🗺️ Use your road map</button>' : '';
@@ -752,7 +754,7 @@
     app.innerHTML = '<main class="teacher credits" id="credits-screen"><div class="teacher-head"><h1>📜 Credits</h1><button class="btn primary" id="back">← Back</button></div>' +
       '<p>' + esc(GAME_TITLE) + ' uses only public-domain and freely licensed pictures. Thank you to every photographer, archive and agency below! ' +
       'License summary: ' + Object.keys(lic).map(function (l) { return lic[l] + "× " + esc(l); }).join(", ") + '. Pictures under CC BY-SA are shared under that same license.</p>' +
-      '<h2>Pictures and maps (' + keys.length + ')</h2><ul class="cred-list">' + rows + '</ul>' +
+      (window.LocalFlavor ? LocalFlavor.creditsHtml() : '') + '<h2>Pictures and maps (' + keys.length + ')</h2><ul class="cred-list">' + rows + '</ul>' +
       '<h2>Map data</h2><p class="small">Florida outline: U.S. Census Bureau Cartographic Boundary File cb_2023_us_state_5m (public domain), simplified. Florida map image: NASA Blue Marble shaded relief via NASA GIBS (public domain). St. Augustine aerial photo: U.S. Geological Survey, The National Map orthoimagery (public domain).</p>' +
       '<h2>Texts</h2><p class="small">“Coquina” reading passage adapted from the National Park Service, Castillo de San Marcos National Monument (public domain). Treaty quotation: Adams-Onís Treaty of 1819, Article II, via The Avalon Project, Yale Law School (public domain text). Other passages were written for this game. Benchmark wording: Florida Department of Education (Rule 6A-1.09401, F.A.C.).</p>' +
       '<h2>Sound</h2><p class="small">All sound effects are made live by the game with the Web Audio API. No recorded audio files are used.</p>' +
