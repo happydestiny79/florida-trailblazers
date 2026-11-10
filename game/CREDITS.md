@@ -69,3 +69,186 @@ System fonts only. No third-party code libraries. Emoji are drawn by the device'
 
 ## Florida Memory note
 Images from the State Archives of Florida (Florida Memory) are used under its public-domain policy (Public Domain Mark), with credit given as the State Archives requests under s. 257.35(6), Florida Statutes: "State Archives of Florida, Florida Memory".
+
+
+## v4 Local Flavor — real photographs
+
+22 photographs. Wikimedia Commons imageinfo/extmetadata author and license checked November 7, 2026. Only public domain, CC BY and CC BY-SA. Derivatives are resized WebP copies (800px wide or less), plus 320px thumbnails; no content alterations. Each CC BY-SA derivative remains under its source license. Original license URLs and author strings appear in `photo-credits.json` and the in-game Local Flavor Photo Credits.
+
+### castillo — Shell-stone stronghold
+- File: `assets/img/flavor/castillo.webp`; thumbnail: `assets/img/flavor/castillo_s.webp`
+- Original title: Aerial view of the Castillo de San Marcos, St. Augustine, FL 2025-05-20.jpg
+- Author: Schwerdf
+- License: CC BY 4.0 https://creativecommons.org/licenses/by/4.0
+- Source: https://commons.wikimedia.org/wiki/File:Aerial_view_of_the_Castillo_de_San_Marcos,_St._Augustine,_FL_2025-05-20.jpg
+- Changes: Resized to at most 800px wide; 320px thumbnail; converted to WebP. No content alterations.
+
+### coquina — A wall made of shells
+- File: `assets/img/flavor/coquina.webp`; thumbnail: `assets/img/flavor/coquina_s.webp`
+- Original title: Coquina wall closeup at Castillo de San Marcos National Monument (2023) 01.jpg
+- Author: Kiran891
+- License: CC BY-SA 4.0 https://creativecommons.org/licenses/by-sa/4.0
+- Source: https://commons.wikimedia.org/wiki/File:Coquina_wall_closeup_at_Castillo_de_San_Marcos_National_Monument_(2023)_01.jpg
+- Changes: Resized to at most 800px wide; 320px thumbnail; converted to WebP. No content alterations.
+
+### datil — A small pepper with a big kick
+- File: `assets/img/flavor/datil.webp`; thumbnail: `assets/img/flavor/datil_s.webp`
+- Original title: Datil.jpg
+- Author: Paullassiter
+- License: CC BY-SA 3.0 https://creativecommons.org/licenses/by-sa/3.0
+- Source: https://commons.wikimedia.org/wiki/File:Datil.jpg
+- Changes: Resized to at most 800px wide; 320px thumbnail; converted to WebP. No content alterations.
+
+### bay — A town beside the water
+- File: `assets/img/flavor/bay.webp`; thumbnail: `assets/img/flavor/bay_s.webp`
+- Original title: Aerial view over the Matanzas Bay of Castillo de San Marcos St. Augustine, Florida.jpg
+- Author: Jonthomascampbell
+- License: CC BY-SA 4.0 https://creativecommons.org/licenses/by-sa/4.0
+- Source: https://commons.wikimedia.org/wiki/File:Aerial_view_over_the_Matanzas_Bay_of_Castillo_de_San_Marcos_St._Augustine,_Florida.jpg
+- Changes: Resized to at most 800px wide; 320px thumbnail; converted to WebP. No content alterations.
+
+### mose_marsh — A marsh with a story
+- File: `assets/img/flavor/mose_marsh.webp`; thumbnail: `assets/img/flavor/mose_marsh_s.webp`
+- Original title: Fort Mose Panorama.JPG
+- Author: Waters.Justin
+- License: CC BY-SA 4.0 https://creativecommons.org/licenses/by-sa/4.0
+- Source: https://commons.wikimedia.org/wiki/File:Fort_Mose_Panorama.JPG
+- Changes: Resized to at most 800px wide; 320px thumbnail; converted to WebP. No content alterations.
+
+### mose_walk — Walk above the wet ground
+- File: `assets/img/flavor/mose_walk.webp`; thumbnail: `assets/img/flavor/mose_walk_s.webp`
+- Original title: St Aug Fort Mose bdwlk east02.jpg
+- Author: Ebyabe
+- License: CC BY-SA 3.0 http://creativecommons.org/licenses/by-sa/3.0/
+- Source: https://commons.wikimedia.org/wiki/File:St_Aug_Fort_Mose_bdwlk_east02.jpg
+- Changes: Resized to at most 800px wide; 320px thumbnail; converted to WebP. No content alterations.
+
+### mose_center — Remembering a free community
+- File: `assets/img/flavor/mose_center.webp`; thumbnail: `assets/img/flavor/mose_center_s.webp`
+- Original title: St Aug Fort Mose VC01.jpg
+- Author: Ebyabe
+- License: CC BY-SA 3.0 http://creativecommons.org/licenses/by-sa/3.0/
+- Source: https://commons.wikimedia.org/wiki/File:St_Aug_Fort_Mose_VC01.jpg
+- Changes: Resized to at most 800px wide; 320px thumbnail; converted to WebP. No content alterations.
+
+### council — A place for Apalachee leaders
+- File: `assets/img/flavor/council.webp`; thumbnail: `assets/img/flavor/council_s.webp`
+- Original title: Replica of Apalachee council house at Mission San Luis- Tallahassee, Florida (7307794334).jpg
+- Author: Florida Memory
+- License: Public domain 
+- Source: https://commons.wikimedia.org/wiki/File:Replica_of_Apalachee_council_house_at_Mission_San_Luis-_Tallahassee,_Florida_(7307794334).jpg
+- Changes: Resized to at most 800px wide; 320px thumbnail; converted to WebP. No content alterations.
+
+### church — Two cultures at one mission
+- File: `assets/img/flavor/church.webp`; thumbnail: `assets/img/flavor/church_s.webp`
+- Original title: Mission San Luis - Reconstructed Franciscan Church.jpg
+- Author: MissionSanLuis
+- License: CC BY-SA 4.0 https://creativecommons.org/licenses/by-sa/4.0
+- Source: https://commons.wikimedia.org/wiki/File:Mission_San_Luis_-_Reconstructed_Franciscan_Church.jpg
+- Changes: Resized to at most 800px wide; 320px thumbnail; converted to WebP. No content alterations.
+
+### capitol — Florida’s capital city
+- File: `assets/img/flavor/capitol.webp`; thumbnail: `assets/img/flavor/capitol_s.webp`
+- Original title: Florida’s Historic Capitol and Florida State Capitol 1.JPG
+- Author: Michael Rivera
+- License: CC BY-SA 3.0 https://creativecommons.org/licenses/by-sa/3.0
+- Source: https://commons.wikimedia.org/wiki/File:Florida%E2%80%99s_Historic_Capitol_and_Florida_State_Capitol_1.JPG
+- Changes: Resized to at most 800px wide; 320px thumbnail; converted to WebP. No content alterations.
+
+### caroline — Clues to a French past
+- File: `assets/img/flavor/caroline.webp`; thumbnail: `assets/img/flavor/caroline_s.webp`
+- Original title: Jacksonville - Fort Caroline - 20220623141815.jpg
+- Author: Riis2602
+- License: CC BY-SA 4.0 https://creativecommons.org/licenses/by-sa/4.0
+- Source: https://commons.wikimedia.org/wiki/File:Jacksonville_-_Fort_Caroline_-_20220623141815.jpg
+- Changes: Resized to at most 800px wide; 320px thumbnail; converted to WebP. No content alterations.
+
+### river — A river through the city
+- File: `assets/img/flavor/river.webp`; thumbnail: `assets/img/flavor/river_s.webp`
+- Original title: Jacksonville and St. Johns River Aerial.jpg
+- Author: formulanone
+- License: CC BY-SA 2.0 https://creativecommons.org/licenses/by-sa/2.0
+- Source: https://commons.wikimedia.org/wiki/File:Jacksonville_and_St._Johns_River_Aerial.jpg
+- Changes: Resized to at most 800px wide; 320px thumbnail; converted to WebP. No content alterations.
+
+### timucuan — A home for coastal wildlife
+- File: `assets/img/flavor/timucuan.webp`; thumbnail: `assets/img/flavor/timucuan_s.webp`
+- Original title: Dawn at Cedar Point Horeshoe Creek. (f7c6dfcc-5c12-4269-8b80-d008227dcac1).jpg
+- Author: NPS
+- License: Public domain 
+- Source: https://commons.wikimedia.org/wiki/File:Dawn_at_Cedar_Point_Horeshoe_Creek._(f7c6dfcc-5c12-4269-8b80-d008227dcac1).jpg
+- Changes: Resized to at most 800px wide; 320px thumbnail; converted to WebP. No content alterations.
+
+### lighthouse — A light for sailors
+- File: `assets/img/flavor/lighthouse.webp`; thumbnail: `assets/img/flavor/lighthouse_s.webp`
+- Original title: Pensacola Lighthouse P9190068.jpg
+- Author: Chris Light
+- License: CC BY-SA 4.0 https://creativecommons.org/licenses/by-sa/4.0
+- Source: https://commons.wikimedia.org/wiki/File:Pensacola_Lighthouse_P9190068.jpg
+- Changes: Resized to at most 800px wide; 320px thumbnail; converted to WebP. No content alterations.
+
+### sands — Bright white sand
+- File: `assets/img/flavor/sands.webp`; thumbnail: `assets/img/flavor/sands_s.webp`
+- Original title: Pensacola Beach - White Sands, Florida Coast (27268946483).jpg
+- Author: Tony Webster from Minneapolis, Minnesota, United States
+- License: CC BY-SA 2.0 https://creativecommons.org/licenses/by-sa/2.0
+- Source: https://commons.wikimedia.org/wiki/File:Pensacola_Beach_-_White_Sands,_Florida_Coast_(27268946483).jpg
+- Changes: Resized to at most 800px wide; 320px thumbnail; converted to WebP. No content alterations.
+
+### pickens — A fort by the harbor
+- File: `assets/img/flavor/pickens.webp`; thumbnail: `assets/img/flavor/pickens_s.webp`
+- Original title: Canon at Fort Pickens, Pensacola, Florida.jpg
+- Author: Suziecleancleats
+- License: CC BY-SA 4.0 https://creativecommons.org/licenses/by-sa/4.0
+- Source: https://commons.wikimedia.org/wiki/File:Canon_at_Fort_Pickens,_Pensacola,_Florida.jpg
+- Changes: Resized to at most 800px wide; 320px thumbnail; converted to WebP. No content alterations.
+
+### sandwich — A taste of Ybor City
+- File: `assets/img/flavor/sandwich.webp`; thumbnail: `assets/img/flavor/sandwich_s.webp`
+- Original title: Cuban Sandwiches at La Segunda, Ybor City.jpg
+- Author: Kramtronik
+- License: CC BY-SA 4.0 https://creativecommons.org/licenses/by-sa/4.0
+- Source: https://commons.wikimedia.org/wiki/File:Cuban_Sandwiches_at_La_Segunda,_Ybor_City.jpg
+- Changes: Resized to at most 800px wide; 320px thumbnail; converted to WebP. No content alterations.
+
+### workers — Workers who helped build a city
+- File: `assets/img/flavor/workers.webp`; thumbnail: `assets/img/flavor/workers_s.webp`
+- Original title: Employees hand rolling cigars in a cigar factory- Ybor City, Florida (3250895561).jpg
+- Author: State Library and Archives of Florida
+- License: Public domain 
+- Source: https://commons.wikimedia.org/wiki/File:Employees_hand_rolling_cigars_in_a_cigar_factory-_Ybor_City,_Florida_(3250895561).jpg
+- Changes: Resized to at most 800px wide; 320px thumbnail; converted to WebP. No content alterations.
+
+### streetcar — Ride on rails
+- File: `assets/img/flavor/streetcar.webp`; thumbnail: `assets/img/flavor/streetcar_s.webp`
+- Original title: Centro Ybor, Ybor City, Tampa, Florida.jpg
+- Author: Peter K Burian
+- License: CC BY-SA 4.0 https://creativecommons.org/licenses/by-sa/4.0
+- Source: https://commons.wikimedia.org/wiki/File:Centro_Ybor,_Ybor_City,_Tampa,_Florida.jpg
+- Changes: Resized to at most 800px wide; 320px thumbnail; converted to WebP. No content alterations.
+
+### deco — Shapes and colors by the sea
+- File: `assets/img/flavor/deco.webp`; thumbnail: `assets/img/flavor/deco_s.webp`
+- Original title: Miami Beach - Art Deco Building.jpg
+- Author: P. Hughes
+- License: CC BY 4.0 https://creativecommons.org/licenses/by/4.0
+- Source: https://commons.wikimedia.org/wiki/File:Miami_Beach_-_Art_Deco_Building.jpg
+- Changes: Resized to at most 800px wide; 320px thumbnail; converted to WebP. No content alterations.
+
+### domino — Games bring neighbors together
+- File: `assets/img/flavor/domino.webp`; thumbnail: `assets/img/flavor/domino_s.webp`
+- Original title: Domino Park Little Havana, Miami FL, Feb 2024.jpg
+- Author: Phillip Pessar
+- License: CC BY 2.0 https://creativecommons.org/licenses/by/2.0
+- Source: https://commons.wikimedia.org/wiki/File:Domino_Park_Little_Havana,_Miami_FL,_Feb_2024.jpg
+- Changes: Resized to at most 800px wide; 320px thumbnail; converted to WebP. No content alterations.
+
+### mangrove — Trees with roots in salty water
+- File: `assets/img/flavor/mangrove.webp`; thumbnail: `assets/img/flavor/mangrove_s.webp`
+- Original title: Biscayne National Park H-mangrove shoreline.jpg
+- Author: National Park Service Digital Image Archives
+- License: Public domain 
+- Source: https://commons.wikimedia.org/wiki/File:Biscayne_National_Park_H-mangrove_shoreline.jpg
+- Changes: Resized to at most 800px wide; 320px thumbnail; converted to WebP. No content alterations.
+
+The Commons verification response is stored in the development handoff at `tools/v4/commons-verification.json`. No game runtime requests are used to obtain images or licenses.
