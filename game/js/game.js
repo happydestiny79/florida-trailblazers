@@ -57,9 +57,10 @@
   function thumb(key) { return IMAGES[key] ? "assets/img/" + IMAGES[key].file.replace(".webp", "_s.webp") : ""; }
 
   /* ---------- read aloud ---------- */
-  function speak(text) { if (!("speechSynthesis" in window)) { toast("Read-aloud isn't available on this computer."); return; }
+  function speak(text) { if (window.READALOUD) { READALOUD.speakText(text); return; }
+    if (!("speechSynthesis" in window)) { toast("Read-aloud isn't available on this computer."); return; }
     window.speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(text); u.rate = 0.92; window.speechSynthesis.speak(u); }
-  function stopSpeak() { if ("speechSynthesis" in window) window.speechSynthesis.cancel(); }
+  function stopSpeak() { if (window.READALOUD) { READALOUD.cancel(); return; } if ("speechSynthesis" in window) window.speechSynthesis.cancel(); }
 
   /* ---------- toast & modal ---------- */
   function toast(msg, cls) { var t = el('<div class="toast ' + (cls || "") + '" role="status">' + msg + '</div>'); document.body.appendChild(t);
@@ -81,6 +82,7 @@
         if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); } else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); } } });
     document.body.appendChild(m); var fb0 = bb.querySelector("button"); if (fb0 && !opts.noFocus) fb0.focus();
     decorate(m.querySelector(".modal-body"));
+    if (window.READALOUD) READALOUD.afterScreen(m);
     return m; }
   function closeModal(keepFocus) { var m = document.getElementById("modal"); if (m) { m.remove(); if (!keepFocus && lastFocus && document.body.contains(lastFocus)) lastFocus.focus(); } }
 
@@ -128,10 +130,16 @@
   function wireHud(readText) {
     var nb = document.getElementById("nb"); if (nb) nb.onclick = function () { notebook(); };
     var mb = document.getElementById("mapbtn"); if (mb) mb.onclick = caseMap;
-    var r = document.getElementById("read"); if (r) r.onclick = function () { speak(readText || strip(document.querySelector("main .panel").innerHTML)); };
+    var r = document.getElementById("read");
+    if (window.READALOUD) READALOUD.wireHud(readText);
+    else if (r) r.onclick = function () { speak(readText || strip(document.querySelector("main .panel").innerHTML)); };
     var e = document.getElementById("eat"); if (e) e.onclick = function () { S.items.snack--; S.energy = clamp(S.energy + 3, 0, 10); SFX.play("pop"); toast("Yum! +3 energy"); save(); render(); };
-    var m = document.getElementById("menu"); if (m) m.onclick = function () { modal("Menu", "<p>Your case is saved automatically on this device.</p>",
-      [{ label: "Keep playing" }, { label: "📜 Credits", cls: "ghost", fn: function () { credits(render); } }, { label: "🏠 Title screen", cls: "ghost", fn: title }], { escClose: true }); };
+    var m = document.getElementById("menu"); if (m) m.onclick = function () {
+      var body = "<p>Your case is saved automatically on this device.</p>" + (window.READALOUD && READALOUD.available() ? READALOUD.settingsHtml() : "");
+      modal("Menu", body,
+      [{ label: "Keep playing" }, { label: "📜 Credits", cls: "ghost", fn: function () { credits(render); } }, { label: "🏠 Title screen", cls: "ghost", fn: title }], { escClose: true });
+      if (window.READALOUD) READALOUD.wireSettings(document.getElementById("modal"));
+    };
     wireSound(); if (window.V3) V3.wireHudExtra();
   }
   function caseMap() {
@@ -182,6 +190,7 @@
     vpop.addEventListener("keydown", function (e) { if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); closeVocab(); } if (e.key === "Tab") { e.preventDefault(); closeVocab(); } });
     if (pinned) vpop.querySelector(".vpop-x").focus({ preventScroll: true });
     if (isNew) { SFX.play("pop"); checkBadges(); save(); }
+    if (pinned && window.READALOUD) READALOUD.onVocab(v.word, v.def);
   }
   function closeVocab(silent) { clearTimeout(vTimer); if (vpop) { vpop.remove(); vpop = null; }
     if (vTrig) { vTrig.setAttribute("aria-expanded", "false"); vTrig.classList.remove("open"); if (!silent && vPinned && document.body.contains(vTrig)) vTrig.focus({ preventScroll: true }); vTrig = null; } }
@@ -231,6 +240,7 @@
       '<br><b>From:</b> <a href="' + esc(I.page) + '" target="_blank" rel="noopener">' + esc(I.page.replace(/^https?:\/\//, "").slice(0, 60)) + '…</a><br><b>Changes:</b> ' + esc(I.changes) + '</p>', [{ label: "Close" }], { escClose: true }); }
   function frame(sc, inner, opts) {
     opts = opts || {};
+    stopSpeak();
     var key = opts.img || sc.img || DEFAULT_BG[sc.loc] || "castillo_aerial";
     var L = LOCATIONS[sc.loc];
     var place = L ? '<div class="place-tag">📍 ' + L.name + (L.sub ? '<span> — ' + L.sub + '</span>' : "") + '</div>' : (sc.loc === "office" ? '<div class="place-tag">📍 Florida History Detective Agency</div>' : "");
@@ -293,7 +303,7 @@
 
   /* ---------- render dispatch ---------- */
   function render() {
-    closeVocab(true); var sc = SCENES[S.scene]; if (!sc) { title(); return; }
+    closeVocab(true); stopSpeak(); var sc = SCENES[S.scene]; if (!sc) { title(); return; }
     var t = sc.type || "story";
     if (window.V3 && V3.scenes[t]) return V3.scenes[t](sc);
     if (t === "story") return storyScene(sc);
@@ -732,7 +742,7 @@
     app.innerHTML = photoBg("castillo_aerial", 1) + '<main class="title-screen"><div class="title-card"><div class="title-kicker">🔎 A Florida history mystery</div><h1>' + esc(GAME_TITLE) + '</h1><h2>' + esc(GAME_SUBTITLE) + '</h2>' +
       '<p>A junior history detective adventure for 3rd and 4th graders. Travel to real places in early Florida, read real sources, collect clues, and catch the thief!</p>' +
       '<div class="btn-col"><button class="btn big primary" id="new">▶ New case</button>' + (canContinue ? '<button class="btn big" id="cont">⏯ Continue case' + (sv.name ? " (" + esc(sv.name) + ")" : "") + '</button>' : "") +
-      (window.V3 ? V3.titleButtons() : "") + '<button class="btn" id="teacher">🍎 Teacher view</button><div class="btn-row2"><button class="btn ghost" id="about">About</button><button class="btn ghost" id="credits">📜 Credits</button>' + soundBtn() + '</div></div>' +
+      (window.V3 ? V3.titleButtons() : "") + '<button class="btn" id="teacher">🍎 Teacher view</button>' + (window.READALOUD && READALOUD.available() ? '<button class="btn" id="ra-open">🔊 Read aloud</button>' : "") + '<div class="btn-row2"><button class="btn ghost" id="about">About</button><button class="btn ghost" id="credits">📜 Credits</button>' + soundBtn() + '</div></div>' +
       '<p class="small">Version ' + esc(GAME_VERSION) + ' • Works offline • Sound is off until you turn it on</p></div>' + captionChip("castillo_aerial") + '</main>';
     document.getElementById("new").onclick = newCase;
     if (canContinue) document.getElementById("cont").onclick = function () { S = sv; render(); };
@@ -740,6 +750,7 @@
     document.getElementById("credits").onclick = function () { credits(title); };
     document.getElementById("about").onclick = function () { modal("About " + esc(GAME_TITLE), "<p>The Founding Stone, the thief, the suspects, Detective " + PARTNER_NAME + ", the rangers and the guides are <b>made up</b>.</p><p>The places are real, and so are the photos and old maps. The history and geography facts come from the National Park Service, Florida State Parks, the Florida Department of State, Mission San Luis, and the Florida Museum. See FACT_CHECK.md for sources and CREDITS.md (or the Credits screen) for every picture.</p><p>Everything is stored in the game folder, so no internet is needed.</p>", [{ label: "OK" }], { escClose: true }); };
     wireSound(); var cc = app.querySelector(".cap-chip"); if (cc) cc.onclick = function () { imageInfo("castillo_aerial"); };
+    var ra = document.getElementById("ra-open"); if (ra && window.READALOUD) ra.onclick = function () { READALOUD.openSettings(); };
     if (window.V3) V3.wireTitle();
   }
 
@@ -757,7 +768,7 @@
       (window.LocalFlavor ? LocalFlavor.creditsHtml() : '') + '<h2>Pictures and maps (' + keys.length + ')</h2><ul class="cred-list">' + rows + '</ul>' +
       '<h2>Map data</h2><p class="small">Florida outline: U.S. Census Bureau Cartographic Boundary File cb_2023_us_state_5m (public domain), simplified. Florida map image: NASA Blue Marble shaded relief via NASA GIBS (public domain). St. Augustine aerial photo: U.S. Geological Survey, The National Map orthoimagery (public domain).</p>' +
       '<h2>Texts</h2><p class="small">“Coquina” reading passage adapted from the National Park Service, Castillo de San Marcos National Monument (public domain). Treaty quotation: Adams-Onís Treaty of 1819, Article II, via The Avalon Project, Yale Law School (public domain text). Other passages were written for this game. Benchmark wording: Florida Department of Education (Rule 6A-1.09401, F.A.C.).</p>' +
-      '<h2>Sound</h2><p class="small">All sound effects are made live by the game with the Web Audio API. No recorded audio files are used.</p>' +
+      '<h2>Sound and read-aloud</h2><p class="small">All sound effects are made live by the game with the Web Audio API. Read-aloud uses the built-in voices on this device (the Web Speech API). No recorded audio files are downloaded or used.</p>' +
       '<h2>Story</h2><p class="small">The Founding Stone, the thief, the suspects, Detective ' + PARTNER_NAME + ', Professor Pelican, Ranger Rosa, Ranger Dee and Guide Tomás are made up. Suspects appear only as silhouettes. No real people are shown as characters.</p></main>';
     document.getElementById("back").onclick = back || title; window.scrollTo(0, 0);
   }
@@ -834,7 +845,8 @@
 
   /* expose a tiny API for automated play-testing */
   window.FTB = { state: function () { return S; }, go: go, title: title, teacher: teacherView, credits: credits, notebook: notebook, csv: function () { return buildCsv(reports()); },
-    checkTyped: checkTyped, score: function () { return scoreRun(S); }, newCase: function (name, team) { clearSave(); S = fresh(); S.name = name || ""; if (window.V3) V3.initState(S, team); enter(SCENES.intro); save(); render(); } };
+    checkTyped: checkTyped, score: function () { return scoreRun(S); }, newCase: function (name, team) { clearSave(); S = fresh(); S.name = name || ""; if (window.V3) V3.initState(S, team); enter(SCENES.intro); save(); render(); },
+    readAloud: function () { return window.READALOUD || null; } };
   /* internals for the v3 add-ons (js/v3.js) */
   window.FTBX = { S: function () { return S; }, setS: function (x) { S = x; }, app: function () { return app; }, el: el, esc: esc, strip: strip, modal: modal, closeModal: closeModal, toast: toast, frame: frame, go: go, render: render, save: save,
     award: award, attempt: attempt, qlog: qlog, nextBtn: nextBtn, fb: fb, decorate: decorate, img: img, thumb: thumb, wireHud: wireHud, partnerWrong: partnerWrong, notebook: notebook, title: title, teacher: teacherView,

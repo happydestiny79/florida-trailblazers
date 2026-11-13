@@ -154,6 +154,7 @@
       '<h2>🏫 Class roster (this device)</h2><div class="chips" id="troster">' + (c.roster.length ? c.roster.map(function (r) { return '<span class="chip">' + V3.avatarFace(r, "neutral", "mini") + esc(r) + ' <button class="x" data-del="' + esc(r) + '" aria-label="Remove ' + esc(r) + '">✕</button></span>'; }).join("") : '<i class="small">No names yet.</i>') + '</div>' +
       '<div class="typed-row"><input id="tname" maxlength="14" placeholder="First name or nickname" aria-label="Add a student (first name or nickname)"><button class="btn" id="tadd">＋ Add student</button></div><div class="feedback" id="tmsg" aria-live="polite"></div>' +
       '<h2>⚙️ Settings</h2><label class="switch"><input type="checkbox" id="relaxed"' + (c.relaxed ? " checked" : "") + '> <b>Relaxed mode</b>: no race against Penny, no Day-4 deadline, no speed bonus. (Applies to new cases on this device.)</label>' +
+      (window.READALOUD && READALOUD.available() ? READALOUD.teacherHtml() : "") +
       '<h2>🏆 Weekly leaderboard</h2>' + boardHtml(true, 30) +
       '<h2>🔗 Share codes: merge scores from several devices</h2><p class="small">On each device, press <b>Make share code</b> and copy the code (for example into a document or by typing it on the teacher device). On the device that collects scores, paste it into <b>Import</b>. Codes contain only first names/nicknames, scores, ranks and dates. Duplicates are skipped.</p>' +
       '<div class="btn-row left"><button class="btn" id="mkcode"' + (n ? "" : " disabled") + '>📤 Make share code (' + n + ' score' + (n === 1 ? "" : "s") + ')</button><button class="btn ghost" id="copycode" disabled>📋 Copy</button><button class="btn ghost" id="clrscores"' + (n ? "" : " disabled") + '>🗑 Clear leaderboard</button></div>' +
@@ -165,6 +166,7 @@
     var add = function () { var r = V3.addToRoster(document.getElementById("tname").value), m = document.getElementById("tmsg"); if (!r.ok) { m.className = "feedback try"; m.textContent = r.msg; return; } T(); setTimeout(function () { document.getElementById("tname").focus(); }, 0); };
     document.getElementById("tadd").onclick = add; document.getElementById("tname").onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); add(); } };
     document.getElementById("relaxed").onchange = function (e) { var c = V3.cls(); c.relaxed = e.target.checked; V3.saveCls(c); X().toast(c.relaxed ? "🌴 Relaxed mode ON for new cases" : "🏁 Race mode ON for new cases"); };
+    if (window.READALOUD) READALOUD.wireTeacher();
     document.getElementById("mkcode").onclick = function () { var o = document.getElementById("codeout"); o.value = exportCode(); document.getElementById("copycode").disabled = false; o.focus(); o.select(); };
     document.getElementById("copycode").onclick = function () { var o = document.getElementById("codeout"); o.select(); var okc = function () { X().toast("📋 Copied!"); };
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(o.value).then(okc, function () { document.execCommand("copy"); okc(); }); else { document.execCommand("copy"); okc(); } };

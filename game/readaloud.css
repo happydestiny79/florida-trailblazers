@@ -1,0 +1,45 @@
+/* Florida Trailblazers v6 — read-aloud buttons and word highlight. */
+.ra-btn {
+  flex: 0 0 44px;
+  width: 44px; height: 44px; min-width: 44px; min-height: 44px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 2px solid #c9a227; border-radius: 50%;
+  background: linear-gradient(180deg, #fff8e1 0%, #ffe08a 100%);
+  color: var(--ink); font-size: 1.05rem; line-height: 1;
+  cursor: pointer; padding: 0; box-shadow: 0 2px 0 rgba(20, 33, 61, .12);
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+}
+.ra-btn:hover, .ra-btn:focus-visible { background: #ffd54f; }
+.ra-btn[aria-pressed="true"] {
+  background: #c0392b; border-color: #8e2a20; color: #fff;
+  box-shadow: 0 0 0 3px rgba(192, 57, 43, .28);
+}
+.ra-row { display: flex; align-items: stretch; gap: 8px; width: 100%; }
+.ra-row > .choice, .ra-row > .opt, .ra-row > .iq, .ra-row > .ev-sent, .ra-row > .lf-spot-choice { flex: 1; min-width: 0; width: auto; }
+.ra-row > .ra-btn { align-self: center; }
+.ra-block { position: relative; padding-right: 52px; }
+.ra-block > .ra-btn { position: absolute; top: 0; right: 0; z-index: 2; }
+.passage.ra-block { padding-right: 12px; }
+.passage.ra-block > .ra-btn { top: 8px; right: 8px; }
+.ra-playing { background: rgba(255, 183, 3, .12); border-radius: 10px; box-shadow: inset 0 0 0 2px rgba(255, 183, 3, .55); }
+.ra-w { border-radius: 3px; transition: background .08s, box-shadow .08s; }
+.ra-w.ra-on { background: #ffe566; box-shadow: 0 2px 0 #e09100, 0 0 0 3px #ffe566; color: var(--ink); }
+.hud-btn.icon#read { min-width: 44px; min-height: 44px; }
+.hud-btn.icon#read.ra-auto-on { box-shadow: inset 0 0 0 2px var(--gold); }
+.ra-settings { margin: 8px 0 4px; padding: 12px 14px; background: #fff8e8; border: 2px solid #e0c56a; border-radius: 14px; }
+.ra-settings h3 { margin: 0 0 6px; font-size: 1.05rem; }
+.ra-settings .switch { margin: 10px 0; }
+.ra-speed { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.ra-speed-lbl { font-weight: 800; margin-right: 4px; }
+.ra-speed-btn.on, .ra-speed-btn[aria-pressed="true"] { background: var(--gold); border-color: var(--ink); }
+.ra-roster { display: flex; flex-direction: column; gap: 10px; margin: 10px 0 16px; }
+.ra-stu { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; background: #fff; border: 2px solid var(--line); border-radius: 12px; padding: 8px 12px; }
+.ra-stu-name { font-weight: 800; min-width: 6ch; }
+.title-card #ra-open { justify-content: center; }
+@media (prefers-reduced-motion: reduce) {
+  .ra-w { transition: none; }
+}
+
+.ra-settings .switch > span, .ra-stu .switch > span, #t-class .switch > span { flex: 1; min-width: 0; }
+
+#t-readaloud-panel { margin: 8px 0 16px; }
