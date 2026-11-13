@@ -36,6 +36,11 @@ var V3 = (function () {
     st.relaxed = cls().relaxed;
     st.team = team && team.length > 1 ? team.slice(0, 3) : null; st.turn = 0; st.teamStats = {};
     if (st.team) { st.name = st.team.join(" & "); st.team.forEach(function (n) { st.teamStats[n] = { tries: 0, right: 0, first: 0 }; }); }
+    if (window.READALOUD) {
+      var who = (st.team && st.team[0]) || st.name;
+      st.readAloud = READALOUD.applyToNewPlayer(who);
+      (st.team || (st.name ? [st.name] : [])).forEach(function (n) { READALOUD.applyToNewPlayer(n); });
+    }
   }
   function ensure() { var st = S(); if (st && !st.v3) initState(st, st.team); return st; }
   function players() { var st = S(); return st.team ? st.team : (st.name ? [st.name] : []); }
