@@ -1,4 +1,4 @@
-FLORIDA TRAILBLAZERS: Case 1, The Stolen Founding Stone (version 4.0 preview)
+FLORIDA TRAILBLAZERS: Case 1, The Stolen Founding Stone (version 5.0 preview)
 
 HOW TO PLAY
   Double-click index.html. It opens in any modern browser (Chrome/Chromebook, Edge, Firefox, Safari),
@@ -6,6 +6,14 @@ HOW TO PLAY
   in the browser. You can also serve the folder (for example: python3 -m http.server) and open
   http://localhost:8000/
   Sound effects are made live by the browser (no audio files) and start OFF; use the speaker button.
+
+WHAT'S NEW IN V5 PREVIEW
+  - Painted kid-detective portraits (24 original detectives, 3 expressions each) replace the
+    SVG avatar builder. Pick a detective, try an expression, and choose a painted Florida
+    backdrop for your ID card. Earned badges appear on the Detective ID card (not as hats
+    pasted on the portrait). Old saved looks migrate to a matching painted detective.
+  - In-game Detective ID card (portrait, name, rank, case number, badges, and a stamp when
+    a case is finished). Open it from My Detective or the win screen.
 
 WHAT'S NEW IN V4 PREVIEW
   - Local Flavor arrival postcards at all 7 real map places (22 verified-license photographs).
@@ -25,7 +33,7 @@ WHAT'S NEW IN V3
     and dust to wipe off the Founding Stone. Touch, mouse and keyboard all work.
   - Penny Pinch leaves riddle notes tied to the standards and shows where she escaped on the map.
     Finish early for a speed bonus. Teachers can switch on Relaxed mode (no timer, no race bonus).
-  - Detective avatar builder; badges unlock costume pieces. Rank and gear save on this device.
+  - Class detective looks and ranks save on this device. (v5: painted portraits and an ID card; badges still unlock from case work.)
   - Class features with no server: class list (first names/nicknames), weekly leaderboard,
     team mode (2-3 partners take turns), and share codes to merge scores from several devices.
     No accounts, no network calls; student data never leaves the device.

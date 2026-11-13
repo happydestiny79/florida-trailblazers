@@ -1,10 +1,12 @@
 # Florida Trailblazers
 
-**Florida Trailblazers: The Stolen Founding Stone** (version 4) is a finished, self-contained HTML5 game for Florida 4th-grade Social Studies. Players travel early Florida, read maps, collect clues, and catch a fictional thief. The history is real; the case is made up.
+**Florida Trailblazers: The Stolen Founding Stone** (version 5) is a finished, self-contained HTML5 game for Florida 4th-grade Social Studies. Players travel early Florida, read maps, collect clues, and catch a fictional thief. The history is real; the case is made up.
 
 Version 3 added painted character portraits with expressions, interviews, dossiers, warrants, a torn map, a magnifier, a villain map, a local leaderboard with share codes, team mode, ranks, and an avatar builder.
 
 **Version 4 — Local Flavor:** At all seven stops, students explore **Local Flavor** scenes with 22 real, properly licensed photos (food, landmarks, wildlife, culture). They can tap vocabulary words, hear flavor clues from witnesses, browse a **photo album**, try an optional **Spot it** bonus, and open a **Photo Credits** screen. For photo attribution, use the in-game Photo Credits screen (also summarized in `game/CREDITS.md` and `game/photo-credits.json`).
+
+**Version 5 — Painted detectives:** Students pick from **24 painted kid detectives** (about ages 8–10), each with **three expressions**. The **painted avatar picker** uses Florida-themed backdrops; progress shows on a **Detective ID card** with earned badges and a **case-complete stamp**. Saves that still use the old SVG avatars **auto-migrate** to the closest painted match (with SVG fallback if a portrait file is missing).
 
 **Play it:** https://happydestiny79.github.io/florida-trailblazers/
 

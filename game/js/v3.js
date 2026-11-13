@@ -24,7 +24,7 @@ var V3 = (function () {
   function profiles() { return jget(K.profiles, {}); }
   function profile(name) { var p = profiles()[nameKey(name)];
     if (!p) p = { name: name, avatar: clone(AVATAR_DEFAULT), badgesEver: [], cases: 0, bestRank: null, bestScore: 0, unlocked: [] };
-    p.avatar = Object.assign(clone(AVATAR_DEFAULT), p.avatar || {}); p.unlocked = p.unlocked || []; p.badgesEver = p.badgesEver || []; return p; }
+    p.avatar = migrateAvatar(p.avatar, p.name || name); p.unlocked = p.unlocked || []; p.badgesEver = p.badgesEver || []; return p; }
   function saveProfile(p) { var P = profiles(); P[nameKey(p.name)] = p; jset(K.profiles, P); }
   function scores() { return jget(K.scores, []); }
   function saveScores(a) { jset(K.scores, a.slice(-500)); }
@@ -61,7 +61,23 @@ var V3 = (function () {
     if (a.hat !== "none") sp.hat = { type: a.hat, color: hatC[a.hat] || "#666" };
     (a.gear || []).forEach(function (g) { if (g === "scarf") sp.outfit.scarf = "#d62828"; else if (g === "magnifier") sp.props.push("magnifier"); else sp.gear.push(g); });
     return sp; }
-  function avatarFace(name, mood, extra) { var p = profile(name); return '<div class="portrait avatar ' + (extra || "") + '">' + PORTRAIT.svg(avatarSpec(p.avatar, name), mood || "neutral", { label: name + "'s detective" }) + '</div>'; }
+  function avatarFallback(img) { var d = img.parentNode; if (!d) return; d.classList.remove("is-painted"); d.classList.add("svg-fallback");
+    var name = d.getAttribute("data-name") || "Detective", mood = d.getAttribute("data-mood") || "neutral";
+    var p = profile(name);
+    d.innerHTML = PORTRAIT.svg(avatarSpec(p.avatar, name), mood, { label: name + "'s detective" }); }
+  function avatarFace(name, mood, extra) { var p = profile(name), a = p.avatar, d = detectiveById(a.detective) || DETECTIVES[0];
+    mood = avatarMood(mood || "neutral"); var small = /\b(mini|talk|med)\b/.test(extra || "");
+    var inner = !window.FTB_SVG_ONLY ? '<img class="painted" src="' + detectiveImg(d.id, mood, small) + '" alt="' + esc(name) + '\'s detective looks ' + mood + '" draggable="false" onerror="V3.avatarFallback(this)">' : PORTRAIT.svg(avatarSpec(a, name), mood, { label: name + "'s detective" });
+    return '<div class="portrait avatar ' + (extra || "") + (inner.charAt(1) === "i" ? " is-painted" : "") + '" data-name="' + esc(name) + '" data-detective="' + d.id + '" data-mood="' + mood + '">' + inner + '</div>'; }
+  function caseNoFor(name) { var s = nameKey(name), h = 0, i; for (i = 0; i < s.length; i++) h = (h * 33 + s.charCodeAt(i)) >>> 0; return "TB-" + String(1000 + (h % 9000)); }
+  function detectiveCard(name, opts) { opts = opts || {}; var p = profile(name), a = p.avatar, d = detectiveById(a.detective) || DETECTIVES[0];
+    var R = (window.FTBX && FTBX.RANKS) || [], rank = (p.bestRank != null && R[p.bestRank]) ? R[p.bestRank] : { name: "Rookie Trailblazer", icon: "🥾" };
+    var badges = UNLOCKS.filter(function (u) { return p.unlocked.indexOf(u.id) >= 0; }).map(function (u) {
+      return { id: u.id, name: u.name, icon: BADGE_ICON[u.id] || "", cls: BADGE_TINT[u.id] || "" }; });
+    var stampWord = (rank.name || "Detective").replace(/^Chief /, "Chief<br>").replace(/^Senior /, "Senior<br>").replace(/^Junior /, "Junior<br>").replace(/^Rookie /, "Rookie<br>");
+    return idCardHtml({ name: esc(name), rank: esc(rank.name), rankIcon: rank.icon || "", caseNo: caseNoFor(name), post: "St. Augustine", year: String((new Date()).getFullYear()),
+      portraitSrc: detectiveImg(d.id, "neutral"), portraitAlt: esc(name) + "'s detective portrait", backdropUrl: backdropUrl(a.backdrop || "coquina") || backdropUrl("coquina"),
+      badges: badges, stamp: !!opts.stamp || p.cases > 0, stampAnimate: !!opts.stampAnimate, stampLabel: stampWord }); }
 
   /* ---------- HUD: current detective + Penny race ---------- */
   var SCENE_ORDER = null;
@@ -79,7 +95,8 @@ var V3 = (function () {
     return out; }
   function wireHudExtra() { var b = document.getElementById("me"); if (b) b.onclick = function () { var st = S();
     X().modal("🕵️ " + esc(current()), '<div class="center">' + avatarFace(current(), "happy", "big") + '</div>' + (st.team ? '<p>Team: <b>' + st.team.map(esc).join(", ") + '</b>. It is <b>' + esc(current()) + '</b>\'s turn. The turn passes after each solved problem.</p>' : '<p>Your detective. Change the look on the title screen (🧑 My Detective).</p>') +
-      (st.relaxed ? '<p class="small">Relaxed mode is on: no race and no deadline.</p>' : '<p class="small">🏁 Race: get to the end fast for a speed bonus. Riddles answered on the first try help you catch up!</p>'), [{ label: "Back to the case" }], { escClose: true }); }; }
+      (st.relaxed ? '<p class="small">Relaxed mode is on: no race and no deadline.</p>' : '<p class="small">🏁 Race: get to the end fast for a speed bonus. Riddles answered on the first try help you catch up!</p>'),
+      [{ label: "🪪 View ID card", fn: function () { if (V3.showIdCard) V3.showIdCard(current(), { stamp: true }); } }, { label: "Back to the case" }], { escClose: true }); }; }
 
   /* ---------- after each page renders ---------- */
   var TURN_TYPES = { q: 1, map: 1, mapq: 1, scaleq: 1, inset: 1, timeline: 1, warrant: 1, search: 1, tornmap: 1, dust: 1, oppcost: 1, travel: 1 };
@@ -95,7 +112,7 @@ var V3 = (function () {
     T.tries++; if (correct) { T.right++; if (L && L.tries === 1) T.first++; st.turn = (st.turn + 1) % st.team.length; X().toast("👏 Nice, " + esc(who) + "! Pass the device to <b>" + esc(current()) + "</b>."); } }
   function onBadge(bid) { var u = UNLOCKS.filter(function (x) { return x.badge === bid; })[0]; if (!u) return; var got = false;
     players().forEach(function (n) { var p = profile(n); if (p.unlocked.indexOf(u.id) < 0) { p.unlocked.push(u.id); got = true; } if (p.badgesEver.indexOf(bid) < 0) p.badgesEver.push(bid); saveProfile(p); });
-    if (got) setTimeout(function () { X().toast("🎁 Costume unlocked: <b>" + esc(u.name) + "</b>!", "badge"); }, 700); }
+    if (got) setTimeout(function () { X().toast("🎁 Badge unlocked: <b>" + esc(u.name) + "</b>! See it on your ID card.", "badge"); }, 700); }
 
   /* ---------- Penny: where she is, riddles ---------- */
   function pennyLoc() { var st = S(); if (!st || !st.v3 || st.v3.caught) return null; var loc = null;
@@ -167,7 +184,7 @@ var V3 = (function () {
     }; }); }
 
   return { svgFallback: svgFallback, svgFace: svgFace, preloadMoods: preloadMoods, PAINTED: PAINTED, K: K, jget: jget, jset: jset, cls: cls, saveCls: saveCls, deviceId: deviceId, checkName: checkName, addToRoster: addToRoster, profiles: profiles, profile: profile, saveProfile: saveProfile,
-    scores: scores, saveScores: saveScores, initState: initState, ensure: ensure, players: players, current: current, face: face, avatarSpec: avatarSpec, avatarFace: avatarFace,
+    scores: scores, saveScores: saveScores, initState: initState, ensure: ensure, players: players, current: current, face: face, avatarSpec: avatarSpec, avatarFace: avatarFace, avatarFallback: avatarFallback, detectiveCard: detectiveCard, caseNoFor: caseNoFor, migrateAvatar: migrateAvatar, pickDetectiveFromLegacy: pickDetectiveFromLegacy, avatarMood: avatarMood,
     hudExtra: hudExtra, wireHudExtra: wireHudExtra, afterFrame: afterFrame, onAttempt: onAttempt, onBadge: onBadge, pennyLoc: pennyLoc, afterGo: afterGo, taunt: taunt,
     interview: interview, dossierHtml: dossierHtml, dossierCard: dossierCard, wireDossiers: wireDossiers, fieldVal: fieldVal, order: order, scenes: {}, clone: clone };
 })();

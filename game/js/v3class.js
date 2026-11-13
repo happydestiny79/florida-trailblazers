@@ -53,10 +53,11 @@
       '<p>🏁 <b>Race against Penny:</b> speed bonus <b>+' + speed + '</b> (Day ' + st.day + ') • riddles on the first try <b>' + firsts + '/3</b> (+' + firsts * 5 + ')</p><p class="total">Leaderboard total: <b>' + total + '</b> = ' + score + ' + ' + bonus + '</p>') +
       '<p>📷 Local Flavor exploration: <b>+' + exploration + '</b> points (part of your leaderboard bonus).</p>' +
       '<div class="win-avatars">' + who.filter(function (n) { return n !== "Guest"; }).map(function (n) { return '<div>' + V3.avatarFace(n, "happy", "med") + '<div class="small">' + esc(n) + '</div></div>'; }).join("") + '</div>' +
-      (newGear.length ? '<p class="unlock">🎁 New costume pieces: <b>' + newGear.map(esc).join(", ") + '</b>. Try them on in 🧑 My Detective!</p>' : "") + team +
-      '<div class="btn-row"><button class="btn" id="wlb">🏆 Class leaderboard</button><button class="btn ghost" id="wav">🧑 My Detective</button></div></div>';
+      (newGear.length ? '<p class="unlock">🎁 New badges for your ID card: <b>' + newGear.map(esc).join(", ") + '</b>. Open 🪪 Detective ID to see them stamped on your card.</p>' : "") + team +
+      '<div class="btn-row"><button class="btn" id="wlb">🏆 Class leaderboard</button><button class="btn" id="wid">🪪 Detective ID</button><button class="btn ghost" id="wav">🧑 My Detective</button></div></div>';
     return { html: html, bonus: bonus, total: total }; };
-  V3.wireWin = function () { var a = document.getElementById("wlb"); if (a) a.onclick = function () { classScreen(X().title); }; var b = document.getElementById("wav"); if (b) b.onclick = function () { avatarBuilder(V3.players()[0], X().title); }; };
+  V3.wireWin = function () { var a = document.getElementById("wlb"); if (a) a.onclick = function () { classScreen(X().title); }; var b = document.getElementById("wav"); if (b) b.onclick = function () { avatarBuilder(V3.players()[0], X().title); };
+    var c = document.getElementById("wid"); if (c) c.onclick = function () { V3.showIdCard(V3.players()[0], { stamp: true, stampAnimate: true }); }; };
 
   /* ---------- title ---------- */
   V3.titleButtons = function () { return '<div class="btn-row2"><button class="btn" id="avatar">🧑 My Detective</button><button class="btn" id="classbtn">🏆 Class &amp; Leaderboard</button></div>'; };
@@ -86,40 +87,53 @@
     if (S() && S().name && !S().team) { var r0 = V3.checkName(S().name); if (r0.ok && c.roster.indexOf(r0.name) >= 0) picked = [r0.name]; }
     draw(); };
 
-  /* ---------- avatar builder ---------- */
-  var LABELS = { skin: "Skin tone", hair: "Hair style", hairColor: "Hair color", hijab: "Hijab color", eyes: "Eye color", outfit: "Outfit", outfitColor: "Outfit color", glasses: "Glasses", hat: "Hat" };
-  var HAIRN = { short: "Short", curly: "Curly", afro: "Afro", puffs: "Puffs", long: "Long", wavy: "Wavy", ponytail: "Ponytail", braids: "Braids", locs: "Locs", bun: "Bun", buzz: "Buzz cut", hijab: "Hijab", none: "Bald" };
+  /* ---------- avatar builder (painted detective picker) ---------- */
+  var EXPR_LBL = { neutral: "😐 Neutral", happy: "😊 Happy", surprised: "😮 Surprised" };
+  function showIdCard(name, opts) {
+    if (!name || name === "Guest") { X().toast("Add a detective name first."); return; }
+    X().modal("🪪 Detective ID", V3.detectiveCard(name, opts || { stamp: true }), [{ label: "Close" }], { cls: "wide id-modal", escClose: true });
+  }
+  V3.showIdCard = showIdCard;
   function avatarBuilder(name, back) { var c = V3.cls(); name = name || (c.roster[0] || null); var p = name ? V3.profile(name) : null, a = p ? p.avatar : V3.clone(AVATAR_DEFAULT), mood = "happy";
-    function locked(kind, v) { var u = UNLOCKS.filter(function (x) { return x.id === v; })[0]; return u && (!p || p.unlocked.indexOf(v) < 0) ? u : null; }
-    function group(key) { var vals = AVATAR_OPTS[key], isColor = /^#/.test(vals[0]);
-      return '<fieldset class="av-group"><legend>' + LABELS[key] + '</legend><div class="av-opts" role="radiogroup" aria-label="' + LABELS[key] + '">' + vals.map(function (v) { var on = a[key] === v, L = locked(key, v);
-        return '<button class="av-opt' + (isColor ? " sw" : "") + (on ? " on" : "") + (L ? " locked" : "") + '" role="radio" aria-checked="' + on + '" data-k="' + key + '" data-v="' + v + '"' + (L ? ' aria-disabled="true" title="Earn the badge to unlock"' : "") + ' aria-label="' + LABELS[key] + ': ' + (isColor ? v : (HAIRN[v] || v)) + (L ? " (locked)" : "") + '"' + (isColor ? ' style="background:' + v + '"' : "") + '>' + (isColor ? "" : (L ? "🔒 " : "") + esc(HAIRN[v] || v.charAt(0).toUpperCase() + v.slice(1))) + '</button>'; }).join("") + '</div></fieldset>'; }
     function draw() {
       var career = p ? '<div class="career"><h3>🎖️ Career (saved on this device)</h3><div>Cases solved: <b>' + p.cases + '</b></div><div>Best rank: <b>' + (p.bestRank != null ? esc(X().RANKS[p.bestRank].icon + " " + X().RANKS[p.bestRank].name) : "–") + '</b></div><div>Badges earned ever: <b>' + p.badgesEver.length + ' / ' + X().BADGES.length + '</b></div>' +
-        '<div class="gear-list"><b>Costume pieces:</b> ' + UNLOCKS.map(function (u) { var got = p.unlocked.indexOf(u.id) >= 0, b = X().BADGES.filter(function (x) { return x.id === u.badge; })[0];
-          return '<span class="gear' + (got ? " got" : "") + '" title="' + (got ? "Unlocked" : "Earn the " + esc(b.name) + " badge") + '">' + (got ? "✔ " : "🔒 ") + esc(u.name) + (got ? "" : ' <i class="small">(' + esc(b.name) + ')</i>') + '</span>'; }).join("") + '</div></div>' : "";
-      var gearOpts = p ? '<fieldset class="av-group"><legend>Gear (from badges)</legend><div class="av-opts">' + UNLOCKS.filter(function (u) { return u.kind === "gear"; }).map(function (u) { var got = p.unlocked.indexOf(u.id) >= 0, on = (a.gear || []).indexOf(u.id) >= 0;
-        return '<button class="av-opt' + (on ? " on" : "") + (got ? "" : " locked") + '" data-gear="' + u.id + '" aria-pressed="' + on + '"' + (got ? "" : ' aria-disabled="true"') + '>' + (got ? "" : "🔒 ") + esc(u.name) + '</button>'; }).join("") + '</div></fieldset>' : "";
+        '<div class="gear-list"><b>ID badges:</b> ' + UNLOCKS.map(function (u) { var got = p.unlocked.indexOf(u.id) >= 0, b = X().BADGES.filter(function (x) { return x.id === u.badge; })[0];
+          return '<button type="button" class="gear' + (got ? " got" : " locked") + '" data-unlock="' + u.id + '" title="' + (got ? "Unlocked — shown on your ID card" : "Earn the " + esc(b.name) + " badge") + '">' + (got ? "✔ " : "🔒 ") + esc(u.name) + (got ? "" : ' <i class="small">(Earn the ' + esc(b.name) + ' badge)</i>') + '</button>'; }).join("") + '</div></div>' : "";
+      var det = detectiveById(a.detective) || DETECTIVES[0];
+      var bg = backdropById(a.backdrop) || AVATAR_BACKDROPS[1];
+      var bgUrl = backdropUrl(bg.id);
+      var preview = name ? '<div class="av-preview-frame' + (bgUrl ? "" : " studio") + '" id="avprev"' + (bgUrl ? ' style="background-image:linear-gradient(180deg,rgba(253,246,231,.55),rgba(247,236,214,.7)),url(\'' + bgUrl + '\')"' : "") + '>' + V3.avatarFace(name, mood, "big") + '</div>' +
+        '<div class="mood-row" role="group" aria-label="Try an expression">' +
+          AVATAR_EXPR.map(function (md) { return '<button class="btn sm moodb' + (md === mood ? " on" : "") + '" data-m="' + md + '" aria-pressed="' + (md === mood) + '">' + EXPR_LBL[md] + '</button>'; }).join("") +
+        '</div><p class="small av-mood-hint">In the case, nervous looks use Surprised and smug looks use Happy.</p>' +
+        '<div class="btn-row left"><button class="btn" id="avid">🪪 View ID card</button></div>' + career : "";
+      var picks = '<fieldset class="av-group"><legend>Choose your detective</legend><div class="det-grid" role="radiogroup" aria-label="Detective portraits">' +
+        DETECTIVES.map(function (d) { var on = det.id === d.id;
+          return '<button type="button" class="det-pick' + (on ? " on" : "") + '" role="radio" aria-checked="' + on + '" data-id="' + d.id + '" aria-label="' + esc(d.name) + '"><img src="' + detectiveImg(d.id, "neutral", true) + '" alt="" draggable="false"><span class="nm">' + esc(d.name) + '</span></button>'; }).join("") +
+        '</div></fieldset>';
+      var bgs = '<fieldset class="av-group"><legend>Painted backdrop (for your ID card)</legend><div class="bg-opts" role="radiogroup" aria-label="Backdrop">' +
+        AVATAR_BACKDROPS.map(function (b) { var on = bg.id === b.id, src = b.file ? "assets/img/avatars/thumbs/" + b.file : "";
+          return '<button type="button" class="bg-opt' + (on ? " on" : "") + '" role="radio" aria-checked="' + on + '" data-bg="' + b.id + '" aria-label="' + esc(b.name) + '">' +
+            (src ? '<img src="' + src + '" alt="" draggable="false">' : '<span class="studio-swatch"></span>') +
+            '<span class="nm">' + esc(b.name) + '</span></button>'; }).join("") +
+        '</div></fieldset>';
       app().innerHTML = '<main class="builder"><div class="builder-head"><h1>🧑 My Detective</h1><button class="btn primary" id="avback">✔ Done</button></div>' +
         '<div class="who-row">' + (c.roster.length ? c.roster.map(function (n) { return '<button class="chip' + (n === name ? " on" : "") + '" data-n="' + esc(n) + '" aria-pressed="' + (n === name) + '">' + V3.avatarFace(n, "neutral", "mini") + esc(n) + '</button>'; }).join("") : "") +
         '<span class="add-who"><input id="avname" maxlength="14" placeholder="New name or nickname" aria-label="New detective name"><button class="btn sm" id="avadd">＋</button></span></div><div class="feedback" id="avmsg" aria-live="polite"></div>' +
-        (name ? '<div class="builder-grid"><div class="av-preview"><div id="avprev">' + PORTRAIT.svg(V3.avatarSpec(a, name), mood, { label: name + "'s detective, " + mood }) + '</div><div class="mood-row" role="group" aria-label="Try an expression">' +
-          PORTRAIT.MOODS.map(function (md) { return '<button class="btn sm moodb' + (md === mood ? " on" : "") + '" data-m="' + md + '" aria-pressed="' + (md === mood) + '">' + { neutral: "😐", nervous: "😰", smug: "😏", surprised: "😮", happy: "😊" }[md] + '<span class="lbl"> ' + md + '</span></button>'; }).join("") + '</div>' + career + '</div>' +
-          '<div class="av-controls">' + ["skin", "hair"].map(group).join("") + (a.hair === "hijab" ? group("hijab") : group("hairColor")) + ["eyes", "outfit", "outfitColor", "glasses", "hat"].map(group).join("") +
-          '<fieldset class="av-group"><legend>Extras</legend><div class="av-opts"><button class="av-opt' + (a.freckles ? " on" : "") + '" data-tog="freckles" aria-pressed="' + !!a.freckles + '">Freckles</button><button class="av-opt' + (a.hearingAid ? " on" : "") + '" data-tog="hearingAid" aria-pressed="' + !!a.hearingAid + '">Hearing aid</button></div></fieldset>' + gearOpts + '</div></div>'
-          : '<p>Add your first name or a nickname to build your detective. <span class="small">(Names and looks are saved only on this device.)</span></p>') + '</main>';
+        (name ? '<div class="builder-grid"><div class="av-preview">' + preview + '</div><div class="av-controls">' + picks + bgs + '</div></div>'
+          : '<p>Add your first name or a nickname to pick your detective. <span class="small">(Names and looks are saved only on this device.)</span></p>') + '</main>';
       var save = function () { if (p) { p.avatar = a; V3.saveProfile(p); } };
       document.getElementById("avback").onclick = function () { save(); back(); };
       app().querySelectorAll(".who-row .chip").forEach(function (b) { b.onclick = function () { save(); name = b.getAttribute("data-n"); p = V3.profile(name); a = p.avatar; draw(); }; });
       var addN = function () { var r = V3.addToRoster(document.getElementById("avname").value); if (!r.ok) { var m2 = document.getElementById("avmsg"); m2.className = "feedback try"; m2.textContent = r.msg; return; } save(); c = V3.cls(); name = r.name; p = V3.profile(name); a = p.avatar; V3.saveProfile(p); draw(); };
       document.getElementById("avadd").onclick = addN; document.getElementById("avname").onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); addN(); } };
-      app().querySelectorAll(".av-opt[data-k]").forEach(function (b) { b.onclick = function () { var k = b.getAttribute("data-k"), v = b.getAttribute("data-v"), L = locked(k, v);
-        if (L) { var bd = X().BADGES.filter(function (x) { return x.id === L.badge; })[0]; X().toast("🔒 Earn the <b>" + esc(bd.name) + "</b> badge to unlock the " + esc(L.name) + "."); return; }
-        a[k] = v; window.SFX && SFX.play("pop"); save(); var y = window.scrollY; draw(); window.scrollTo(0, y); var f = document.querySelector('.av-opt[data-k="' + k + '"][data-v="' + v + '"]'); if (f) f.focus({ preventScroll: true }); }; });
-      app().querySelectorAll(".av-opt[data-tog]").forEach(function (b) { b.onclick = function () { var k = b.getAttribute("data-tog"); a[k] = !a[k]; save(); var y = window.scrollY; draw(); window.scrollTo(0, y); }; });
-      app().querySelectorAll(".av-opt[data-gear]").forEach(function (b) { b.onclick = function () { var g = b.getAttribute("data-gear"); if (p.unlocked.indexOf(g) < 0) { var u = UNLOCKS.filter(function (x) { return x.id === g; })[0], bd = X().BADGES.filter(function (x) { return x.id === u.badge; })[0]; X().toast("🔒 Earn the <b>" + esc(bd.name) + "</b> badge first."); return; }
-        a.gear = a.gear || []; var i = a.gear.indexOf(g); if (i >= 0) a.gear.splice(i, 1); else a.gear.push(g); save(); var y = window.scrollY; draw(); window.scrollTo(0, y); }; });
+      app().querySelectorAll(".det-pick").forEach(function (b) { b.onclick = function () { a.detective = b.getAttribute("data-id"); window.SFX && SFX.play("pop"); save(); var y = window.scrollY; draw(); window.scrollTo(0, y); var f = document.querySelector('.det-pick[data-id="' + a.detective + '"]'); if (f) f.focus({ preventScroll: true }); }; });
+      app().querySelectorAll(".bg-opt").forEach(function (b) { b.onclick = function () { a.backdrop = b.getAttribute("data-bg"); window.SFX && SFX.play("pop"); save(); var y = window.scrollY; draw(); window.scrollTo(0, y); var f = document.querySelector('.bg-opt[data-bg="' + a.backdrop + '"]'); if (f) f.focus({ preventScroll: true }); }; });
       app().querySelectorAll(".moodb").forEach(function (b) { b.onclick = function () { mood = b.getAttribute("data-m"); var y = window.scrollY; draw(); window.scrollTo(0, y); }; });
+      var idb = document.getElementById("avid"); if (idb) idb.onclick = function () { save(); showIdCard(name, { stamp: p && p.cases > 0, stampAnimate: false }); };
+      app().querySelectorAll(".gear[data-unlock]").forEach(function (b) { b.onclick = function () { var id = b.getAttribute("data-unlock"), u = UNLOCKS.filter(function (x) { return x.id === id; })[0], bd = X().BADGES.filter(function (x) { return x.id === u.badge; })[0];
+        if (p.unlocked.indexOf(id) < 0) { X().toast("🔒 Earn the <b>" + esc(bd.name) + "</b> badge to unlock the " + esc(u.name) + "."); return; }
+        showIdCard(name, { stamp: p.cases > 0 }); }; });
       window.scrollTo(0, 0); }
     draw(); }
   V3.avatarBuilder = avatarBuilder;

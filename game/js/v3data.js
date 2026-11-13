@@ -133,7 +133,7 @@ var AVATAR_OPTS = {
   glasses: ["none", "round", "square"],
   hat: ["none", "cap", "beret", "deerstalker", "ranger", "explorer"]
 };
-var AVATAR_DEFAULT = { skin: "#c08a5e", hair: "curly", hairColor: "#16100c", hijab: "#2a9d8f", eyes: "#3b2414", outfit: "trench", outfitColor: "#c9a77a", glasses: "none", hat: "none", freckles: false, hearingAid: false, gear: [] };
+var AVATAR_DEFAULT = { detective: "ava", backdrop: "coquina", skin: "#c08a5e", hair: "curly", hairColor: "#16100c", hijab: "#2a9d8f", eyes: "#3b2414", outfit: "trench", outfitColor: "#c9a77a", glasses: "none", hat: "none", freckles: false, hearingAid: false, gear: [] };
 /* costume pieces unlocked by badges (they stay unlocked across cases) */
 var UNLOCKS = [
   { id: "deerstalker", kind: "hat", badge: "firstclue", name: "Detective hat" },
