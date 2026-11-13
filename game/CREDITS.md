@@ -61,6 +61,14 @@ Generated on 2026-10-19 from `game-v2/js/images.js` by `tools/make_docs_v2.js`. 
 - **Hotspot / magnifier scene** uses the existing `castillo_room` photo (credited above). **Torn-map puzzle** slices the existing `gibson1763` map (Library of Congress, public domain) with CSS.
 - Nothing was bought or added from third parties for v3.
 
+
+## v5: painted kid detectives and ID-card backdrops
+- **Detective portraits** (`assets/img/avatars/*_{neutral,happy,surprised}.webp` and `thumbs/`, 24 fictional children × 3 expressions): **original AI-generated art made for this project**, in the same painted graphic-novel style as the v3 character portraits (tan trench coat, cream studio backdrop, head-and-shoulders framing). They depict **made-up 8-to-10-year-old detectives**, not any real person or copyrighted character. Each expression was generated from that detective's own neutral image. Full-size originals are in `art-src/avatars/` (not shipped in the game zip). Changes: resized to 512×512 and a 160×160 thumbnail, WebP quality ~80 / ~75.
+- **ID-card backdrops** (`assets/img/avatars/bg_coquina.webp`, `bg_mangroves.webp`, `bg_oaks.webp`, `bg_beach.webp` and thumbnails): original painted (not photographic) Florida-themed backgrounds made for this project with the same image tool. Changes: resized WebP derivatives.
+- The in-game Detective ID card, circular badge icons, and stamp are drawn in code (`js/avatars.js`, `v3.css`). Costume pieces earned from badges appear as badge icons on the card, not as hats composited onto the painted heads.
+- Older saved profiles that still have SVG avatar settings are mapped to a close painted detective; players can change the pick in My Detective. The SVG portrait engine remains as a fallback if a painted file is missing.
+- Nothing was bought or added from third parties for v5.
+
 ## Sound
 All sound effects are synthesized live in the browser with the Web Audio API (`js/sound.js`). No audio files and no third-party audio are used. Sound is off by default.
 
