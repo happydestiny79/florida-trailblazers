@@ -125,19 +125,22 @@
       '<div class="stat" title="Energy">⚡ <b>' + S.energy + '</b></div>' +
       (S.relaxed ? '<div class="stat" title="Day (relaxed mode: no deadline)">📅 <b>' + S.day + '</b></div></div>' : '<div class="stat' + late + '" title="Day">📅 <b>' + S.day + '</b>/' + START.deadline + '</div></div>') + snack + (window.V3 ? V3.hudExtra(sc) : "") +
       '<div class="hud-tools"><button class="hud-btn" id="nb" aria-label="Detective Notebook">📓<span class="lbl"> Notebook</span> <span class="count">' + S.clues.length + '</span></button>' +
+      '<button class="hud-btn" id="journalbtn" aria-label="Florida Field Journal">📒<span class="lbl"> Journal</span> <span class="count">' + (window.JOURNAL ? JOURNAL.count() : 0) + '/' + (window.JOURNAL ? JOURNAL.TOTAL : 9) + '</span></button>' +
       '<button class="hud-btn" id="mapbtn" aria-label="Case map">🗺️<span class="lbl"> Map</span></button>' +
       '<button class="hud-btn icon" id="read" aria-label="Read this page aloud" title="Read aloud">🗣️</button>' + soundBtn() + '</div></header>'; }
   function wireHud(readText) {
     var nb = document.getElementById("nb"); if (nb) nb.onclick = function () { notebook(); };
+    var jb = document.getElementById("journalbtn"); if (jb && window.JOURNAL) jb.onclick = function () { JOURNAL.open({ from: "game" }); };
     var mb = document.getElementById("mapbtn"); if (mb) mb.onclick = caseMap;
     var r = document.getElementById("read");
     if (window.READALOUD) READALOUD.wireHud(readText);
     else if (r) r.onclick = function () { speak(readText || strip(document.querySelector("main .panel").innerHTML)); };
     var e = document.getElementById("eat"); if (e) e.onclick = function () { S.items.snack--; S.energy = clamp(S.energy + 3, 0, 10); SFX.play("pop"); toast("Yum! +3 energy"); save(); render(); };
     var m = document.getElementById("menu"); if (m) m.onclick = function () {
-      var body = "<p>Your case is saved automatically on this device.</p>" + (window.READALOUD && READALOUD.available() ? READALOUD.settingsHtml() : "");
+      var body = "<p>Your case is saved automatically on this device.</p>" + (window.SFX && SFX.settingsHtml ? SFX.settingsHtml() : "") + (window.READALOUD && READALOUD.available() ? READALOUD.settingsHtml() : "");
       modal("Menu", body,
-      [{ label: "Keep playing" }, { label: "📜 Credits", cls: "ghost", fn: function () { credits(render); } }, { label: "🏠 Title screen", cls: "ghost", fn: title }], { escClose: true });
+      [{ label: "Keep playing" }, { label: "📒 Field Journal", cls: "ghost", fn: function () { if (window.JOURNAL) JOURNAL.open({ from: "game" }); } }, { label: "📜 Credits", cls: "ghost", fn: function () { credits(render); } }, { label: "🏠 Title screen", cls: "ghost", fn: title }], { escClose: true });
+      if (window.SFX && SFX.wireSettings) SFX.wireSettings(document.getElementById("modal"));
       if (window.READALOUD) READALOUD.wireSettings(document.getElementById("modal"));
     };
     wireSound(); if (window.V3) V3.wireHudExtra();
@@ -742,15 +745,17 @@
     app.innerHTML = photoBg("castillo_aerial", 1) + '<main class="title-screen"><div class="title-card"><div class="title-kicker">🔎 A Florida history mystery</div><h1>' + esc(GAME_TITLE) + '</h1><h2>' + esc(GAME_SUBTITLE) + '</h2>' +
       '<p>A junior history detective adventure for 3rd and 4th graders. Travel to real places in early Florida, read real sources, collect clues, and catch the thief!</p>' +
       '<div class="btn-col"><button class="btn big primary" id="new">▶ New case</button>' + (canContinue ? '<button class="btn big" id="cont">⏯ Continue case' + (sv.name ? " (" + esc(sv.name) + ")" : "") + '</button>' : "") +
-      (window.V3 ? V3.titleButtons() : "") + '<button class="btn" id="teacher">🍎 Teacher view</button>' + (window.READALOUD && READALOUD.available() ? '<button class="btn" id="ra-open">🔊 Read aloud</button>' : "") + '<div class="btn-row2"><button class="btn ghost" id="about">About</button><button class="btn ghost" id="credits">📜 Credits</button>' + soundBtn() + '</div></div>' +
+      (window.V3 ? V3.titleButtons() : "") + '<button class="btn" id="teacher">🍎 Teacher view</button>' + (window.READALOUD && READALOUD.available() ? '<button class="btn" id="ra-open">🔊 Read aloud</button>' : "") + '<button class="btn" id="snd-open">🔊 Sound</button>' + '<div class="btn-row2"><button class="btn ghost" id="about">About</button><button class="btn ghost" id="credits">📜 Credits</button>' + soundBtn() + '</div></div>' +
       '<p class="small">Version ' + esc(GAME_VERSION) + ' • Works offline • Sound is off until you turn it on</p></div>' + captionChip("castillo_aerial") + '</main>';
     document.getElementById("new").onclick = newCase;
     if (canContinue) document.getElementById("cont").onclick = function () { S = sv; render(); };
     document.getElementById("teacher").onclick = teacherView;
     document.getElementById("credits").onclick = function () { credits(title); };
-    document.getElementById("about").onclick = function () { modal("About " + esc(GAME_TITLE), "<p>The Founding Stone, the thief, the suspects, Detective " + PARTNER_NAME + ", the rangers and the guides are <b>made up</b>.</p><p>The places are real, and so are the photos and old maps. The history and geography facts come from the National Park Service, Florida State Parks, the Florida Department of State, Mission San Luis, and the Florida Museum. See FACT_CHECK.md for sources and CREDITS.md (or the Credits screen) for every picture.</p><p>Everything is stored in the game folder, so no internet is needed.</p>", [{ label: "OK" }], { escClose: true }); };
+    document.getElementById("about").onclick = function () { modal("About " + esc(GAME_TITLE), "<p>The Founding Stone, the thief, the suspects, Detective " + PARTNER_NAME + ", the rangers, the guides, <b>the Swamp Fox</b>, Gator Gil and Minnow are <b>made up</b>.</p><p>The places are real, and so are the photos and old maps. The history and geography facts come from the National Park Service, Florida State Parks, the Florida Department of State, Mission San Luis, and the Florida Museum. See FACT_CHECK.md for sources and CREDITS.md (or the Credits screen) for every picture.</p><p>Everything is stored in the game folder, so no internet is needed. Music and sound effects are made live by this device (no audio files).</p>", [{ label: "OK" }], { escClose: true }); };
     wireSound(); var cc = app.querySelector(".cap-chip"); if (cc) cc.onclick = function () { imageInfo("castillo_aerial"); };
     var ra = document.getElementById("ra-open"); if (ra && window.READALOUD) ra.onclick = function () { READALOUD.openSettings(); };
+    var so = document.getElementById("snd-open"); if (so && window.SFX && SFX.openSettings) so.onclick = function () { SFX.openSettings(); };
+    if (window.SFX && SFX.setMode) SFX.setMode("title");
     if (window.V3) V3.wireTitle();
   }
 
@@ -768,8 +773,11 @@
       (window.LocalFlavor ? LocalFlavor.creditsHtml() : '') + '<h2>Pictures and maps (' + keys.length + ')</h2><ul class="cred-list">' + rows + '</ul>' +
       '<h2>Map data</h2><p class="small">Florida outline: U.S. Census Bureau Cartographic Boundary File cb_2023_us_state_5m (public domain), simplified. Florida map image: NASA Blue Marble shaded relief via NASA GIBS (public domain). St. Augustine aerial photo: U.S. Geological Survey, The National Map orthoimagery (public domain).</p>' +
       '<h2>Texts</h2><p class="small">“Coquina” reading passage adapted from the National Park Service, Castillo de San Marcos National Monument (public domain). Treaty quotation: Adams-Onís Treaty of 1819, Article II, via The Avalon Project, Yale Law School (public domain text). Other passages were written for this game. Benchmark wording: Florida Department of Education (Rule 6A-1.09401, F.A.C.).</p>' +
-      '<h2>Sound and read-aloud</h2><p class="small">All sound effects are made live by the game with the Web Audio API. Read-aloud uses the built-in voices on this device (the Web Speech API). No recorded audio files are downloaded or used.</p>' +
-      '<h2>Story</h2><p class="small">The Founding Stone, the thief, the suspects, Detective ' + PARTNER_NAME + ', Professor Pelican, Ranger Rosa, Ranger Dee and Guide Tomás are made up. Suspects appear only as silhouettes. No real people are shown as characters.</p></main>';
+      '<h2>Sound and read-aloud</h2><p class="small">All music and sound effects are made live by the game with the Web Audio API (original, self-made synthesis; no recorded audio files are downloaded or used). Read-aloud uses the built-in voices on this device (the Web Speech API).</p>' +
+      (window.HEIST && HEIST.creditsHtml ? HEIST.creditsHtml() : "") +
+      (window.JOURNAL && JOURNAL.creditsHtml ? JOURNAL.creditsHtml() : "") +
+      (window.MINI && MINI.creditsHtml ? MINI.creditsHtml() : "") +
+      '<h2>Story</h2><p class="small">The Founding Stone, the thief, the suspects, Detective ' + PARTNER_NAME + ', Professor Pelican, Ranger Rosa, Ranger Dee, Guide Tomás, the Swamp Fox, Gator Gil and Minnow are made up. No real people are shown as characters.</p></main>';
     document.getElementById("back").onclick = back || title; window.scrollTo(0, 0);
   }
 
