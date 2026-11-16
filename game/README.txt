@@ -1,13 +1,35 @@
-FLORIDA TRAILBLAZERS: Case 1, The Stolen Founding Stone (version 6.0 preview)
+FLORIDA TRAILBLAZERS: Case 1, The Stolen Founding Stone (version 8.0 preview)
 
 HOW TO PLAY
   Double-click index.html. It opens in any modern browser (Chrome/Chromebook, Edge, Firefox, Safari),
   on a computer, tablet or phone. No internet, no install, no accounts. Progress saves automatically
   in the browser. You can also serve the folder (for example: python3 -m http.server) and open
   http://localhost:8000/
-  Sound effects are made live by the browser (no audio files) and start OFF; use the speaker button.
+  Sound (music and effects) is made live by the browser (no audio files) and starts OFF; use the
+  speaker button or the Sound settings. Music and Effects have separate volume sliders. Teachers can
+  turn on "Classroom quiet" to mute sound for the whole class (or one student).
   Read-aloud uses the device's built-in voice (no audio files). Tap a 🔊 button next to a passage,
-  clue, question or answer, or turn on "Read to me" so each new screen is read automatically.
+  clue, question, answer or Swamp Fox calling card, or turn on "Read to me" so each new screen is
+  read automatically. Music quietly ducks while the voice is speaking.
+
+WHAT'S NEW IN V7 PREVIEW
+  - The Swamp Fox Heist: a sly, painted thief in a raccoon mask and a gator-scale vest is snatching
+    Florida treasures at each stop (a Castillo cannon, a Fort Mose replica militia drum, and a
+    Mission San Luis replica church bell). The Founding Stone case and Penny Pinch stay the same.
+  - Florida Field Journal: collect painted cards of real Florida places, wildlife, food, and
+    history as you travel. Open the Journal from the title screen, the menu, or the 📒 button.
+  - Two short, skippable bonus mini-games (about 30 seconds): Marsh Canoe Dash at Fort Mose,
+    and Place the Landmarks (a map-sort) at Tallahassee. Each can reward a journal card.
+
+  - Calling cards at St. Augustine, Fort Mose and Mission San Luis, with a speaker button so they
+    can be read aloud. Right answers fill a "Closing in" meter and sometimes reveal a chase clue.
+    Wrong answers do not take the meter down.
+  - At the end of the case you catch her (caught pose, confetti, fanfare). Her mugshot is added to
+    the Detective ID card under "Most Wanted / Captured," and it stays saved with the student profile.
+  - Two comic henchmen, Gator Gil (clumsy) and Minnow (a short adult lookout), appear on later cards.
+  - Adventure music loops (title, map, investigation, capture) plus new effects (coin chime, soft
+    "hmm" for a wrong answer, clue, stamp, level-up, capture fanfare). All synthesized with the
+    Web Audio API — no audio files, no downloads, no extra cost. Sound still starts OFF.
 
 WHAT'S NEW IN V6 PREVIEW
   - Read-aloud for students who struggle with reading. A speaker button sits on story text,

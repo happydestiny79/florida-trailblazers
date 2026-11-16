@@ -1,0 +1,68 @@
+/* v7: The Swamp Fox Heist + sound sliders */
+.fox-meter { display: flex; align-items: center; gap: 8px; flex: 1 1 140px; min-width: 140px; max-width: 260px; color: #fff; }
+.fox-meter-lbl { font-size: .72rem; font-weight: 800; letter-spacing: .2px; white-space: nowrap; }
+.fox-meter-track { flex: 1; height: 10px; background: rgba(255,255,255,.2); border-radius: 99px; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(255,255,255,.15); }
+.fox-meter-fill { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #f4c430, #ffe08a); border-radius: 99px; transition: width .35s ease; }
+.fox-meter.hot .fox-meter-fill { background: linear-gradient(90deg, #ffb703, #fff3bf); }
+.fox-meter-n { font-size: .72rem; font-weight: 800; tabular-nums: true; font-variant-numeric: tabular-nums; }
+@media (max-width: 480px) { .fox-meter-lbl { font-size: .68rem; } .fox-meter { min-width: 120px; } }
+
+.fox-card { margin: 12px 0 16px; }
+.fox-card-kicker { font-size: .78rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #3d5c2a; margin: 0 0 6px; }
+.fox-card-row { display: grid; grid-template-columns: 1fr 160px; gap: 12px; align-items: stretch; }
+.fox-card-art { position: relative; background: #f6edd4 center / 100% 100% no-repeat; border-radius: 12px; min-height: 200px; padding: 22% 10% 12%; box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+.fox-note { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 1.05rem; line-height: 1.45; color: #2a2418; }
+.fox-sign { margin: 10px 0 0; font-family: Georgia, serif; font-style: italic; color: #3d5c2a; font-weight: 700; }
+.fox-card-art .ra-btn { position: absolute; top: 8px; right: 8px; }
+.fox-card-side { display: flex; flex-direction: column; gap: 8px; }
+.fox-pose { width: 100%; height: auto; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,.2); background: #ead9b8; }
+.fox-pose.big { max-width: 280px; margin: 0 auto; display: block; }
+.fox-hench { margin: 0; }
+.fox-hench img { width: 100%; border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,.18); }
+.fox-hench figcaption, .fox-mug figcaption, .id-mug figcaption { font-size: .78rem; color: #4a4030; margin-top: 4px; text-align: center; }
+.fox-treasure { margin: 0; font-size: .9rem; }
+.fox-fact { margin: 0; color: #5a4c38; }
+@media (max-width: 640px) {
+  .fox-card-row { grid-template-columns: 1fr; }
+  .fox-card-side { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: start; }
+  .fox-treasure, .fox-fact { grid-column: 1 / -1; }
+  .fox-card-art { min-height: 180px; padding: 24% 9% 14%; }
+}
+
+.fox-intro { display: grid; grid-template-columns: 160px 1fr; gap: 14px; align-items: center; }
+.fox-intro .fox-pose { max-width: 160px; }
+@media (max-width: 520px) { .fox-intro { grid-template-columns: 1fr; } .fox-intro .fox-pose { max-width: 220px; } }
+
+.fox-capture { position: relative; margin: 0 0 22px; padding: 16px 12px 12px; border-radius: 16px; background: linear-gradient(180deg, #14301f, #1b4332 60%, #0f2418); color: #f6edd4; overflow: hidden; text-align: center; }
+.fox-capture h2 { color: #ffe08a; margin: 10px 0 8px; }
+.fox-capture p { margin: 0 0 8px; }
+.fox-capture .fox-pose { max-width: 260px; }
+.fox-mug { margin: 12px auto 4px; max-width: 200px; }
+.fox-mug img { width: 100%; border-radius: 8px; border: 3px solid #c9a227; box-shadow: 0 6px 16px rgba(0,0,0,.35); background: #ddd; }
+.fox-mug figcaption { color: #ffe08a; font-weight: 700; }
+.fox-confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.fox-bit { position: absolute; top: -12px; font-size: 14px; color: #ffd166; animation: fox-fall 2.4s linear infinite; opacity: .85; }
+@keyframes fox-fall { from { transform: translateY(0) rotate(0); } to { transform: translateY(340px) rotate(180deg); } }
+@media (prefers-reduced-motion: reduce) { .fox-bit { animation: none; display: none; } .fox-meter-fill { transition: none; } }
+
+.id-wanted { padding: 0 14px 18px; }
+.id-wanted-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.id-mug { margin: 0; width: 88px; text-align: center; }
+.id-mug img { width: 88px; height: 118px; object-fit: cover; border-radius: 6px; border: 2px solid #5a3d1c; background: #ddd; }
+.id-mug figcaption { font-size: .68rem; font-weight: 700; color: #14213d; }
+
+.snd-settings h3, .snd-teacher h3 { margin: 8px 0 6px; }
+.snd-slider { display: grid; grid-template-columns: 72px 1fr 48px; gap: 8px; align-items: center; margin: 8px 0; font-weight: 700; }
+.snd-slider input[type=range] { width: 100%; height: 28px; accent-color: #c9a227; }
+.snd-quiet-note { background: #fff6d8; border-left: 4px solid #c9a227; padding: 6px 8px; }
+.snd-stu { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,.08); }
+.snd-stu .switch { margin: 0; }
+.snd-stu-list { margin: 6px 0 12px; }
+.fox-creds .cred img { object-fit: cover; width: 72px; height: 96px; }
+
+/* The Sound modal already has a title. Keep the heading in the in-game Menu only. */
+#modal[aria-labelledby] .modal #snd-settings > h3 { /* keep */ }
+
+/* v8: make the Swamp Fox a clearly labeled bonus case thread */
+.fox-bonus-tag { display: inline-block; background: #3d5c2a; color: #fff6d8; font-weight: 800; font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; padding: 3px 9px; border-radius: 99px; margin: 0 0 8px; }
+.fox-intro-text .fox-bonus-tag { margin-bottom: 10px; }

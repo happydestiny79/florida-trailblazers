@@ -65,7 +65,7 @@ var LocalFlavor = (function () {
   }
   function photo(p) {
     var v = VOCAB[p.vocab];
-    return '<article class="lf-postcard"><div class="lf-tape" aria-hidden="true"></div><img src="' + esc(p.file) + '" alt="' + esc(p.caption) + ' — ' + esc(p.title) + '" loading="lazy" width="800" height="500"><div class="lf-photo-text"><h3>' + esc(p.caption) + '</h3><p>' + esc(p.fact) + '</p><div class="lf-word">Word to collect: <button type="button" class="vocab" data-v="' + p.vocab + '" aria-haspopup="dialog" aria-expanded="false">' + esc(v.word) + '</button></div>' + credit(p) + '</div></article>';
+    return '<article class="lf-postcard" data-photo="' + p.id + '"><div class="lf-tape" aria-hidden="true"></div><img src="' + esc(p.file) + '" alt="' + esc(p.caption) + ' — ' + esc(p.title) + '" loading="lazy" width="800" height="500"><div class="lf-photo-text"><h3>' + esc(p.caption) + '</h3><p>' + esc(p.fact) + '</p><div class="lf-word">Word to collect: <button type="button" class="vocab" data-v="' + p.vocab + '" aria-haspopup="dialog" aria-expanded="false">' + esc(v.word) + '</button></div>' + credit(p) + '</div></article>';
   }
   function spot(loc) {
     var solved = !!ensure().solved[loc], p = LOCAL_FLAVOR[loc][0], ids = Object.keys(LOCAL_FLAVOR), other = ids[(ids.indexOf(loc) + 3) % ids.length], wrong = LOCAL_FLAVOR[other][0];

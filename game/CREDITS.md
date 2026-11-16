@@ -260,3 +260,29 @@ Images from the State Archives of Florida (Florida Memory) are used under its pu
 - Changes: Resized to at most 800px wide; 320px thumbnail; converted to WebP. No content alterations.
 
 The Commons verification response is stored in the development handoff at `tools/v4/commons-verification.json`. No game runtime requests are used to obtain images or licenses.
+
+
+## v7: The Swamp Fox Heist and sound
+
+- **The Swamp Fox, Gator Gil and Minnow** (`assets/img/villain/*.webp` and `_s` thumbnails): **original AI-generated art made for this project**, in the same painted graphic-novel style as the v3 character portraits and v5 kid detectives (style reference `art-src/penny_style_ref.jpg`). They depict **fictional people**, not any real person or copyrighted character. The Swamp Fox is a sly, kid-safe thief (raccoon-style eye mask, alligator-scale vest). Gator Gil is her clumsy helper. Minnow is a short adult lookout (not a child). Full-size originals are in `art-src/villain/` (not required to play). Changes: resized so the longest side is 512px (calling card 640px wide) and a 180px thumbnail, WebP quality ~80 / ~72.
+  - `fox_taunt.webp` — smirking with a calling card
+  - `fox_run.webp` — running away with a historic cannon (story loot; not aimed as a weapon)
+  - `fox_caught.webp` — surprised, comic “caught” pose
+  - `fox_mugshot.webp` — front-facing mugshot with a height chart and a “SWAMP FOX” placard
+  - `fox_card.webp` — blank painted calling-card template (letterhead only; note text is HTML)
+  - `gil_neutral.webp`, `gil_oops.webp` — Gator Gil
+  - `minnow_lookout.webp`, `minnow_nervous.webp` — Minnow
+- **Story treasures** (a Castillo cannon, a Fort Mose replica militia drum, a Mission San Luis replica church bell) are made up for the chase. The places and the history around them are real: the Castillo de San Marcos really has historic cannons; Fort Mose’s free Black militia helped defend St. Augustine; in 1704 the people of San Luis buried church bells, hoping to return. See FACT_CHECK.md for sourced facts already used in the case.
+- **Music and sound effects**: original, self-made synthesis created in the game with the Web Audio API (`js/sound.js`). No recorded audio files, no third-party samples, nothing to license. Music ducks while read-aloud (the device’s built-in Web Speech API voices) is speaking.
+
+
+## v8 original painted Field Journal cards
+
+Nine collectible cards in `assets/img/journal/` were painted for this game (graphic-novel style). They are original game art, not photographs. Landmark and food cards used already-licensed game photographs as likeness references (Castillo, coquina, Fort Mose site, Historic Capitol, council house, datil peppers). Wildlife (great egret, Florida manatee) and the Florida map card were painted from careful descriptions of the real animals and geography. License: original work for this game.
+
+The Swamp Fox mugshot in `assets/img/villain/fox_mugshot.webp` was repainted in v8 so the height-chart lines are clean and unlabeled (no repeated feet numbers). It is original painted character art of a fictional person, consistent with the other Swamp Fox poses.
+
+
+## v8 mini-game painted art
+
+Original painted sprites in `assets/img/minigames/` were created for this game (graphic-novel style). They are original game art, not photographs. Files: `water.webp` (tileable salt-marsh water), `canoe.webp`, `gator.webp` (comic, kid-safe), `log.webp`, `shell.webp` (a whelk seashell), and `map.webp` (Florida game-board map). Sprite backgrounds were removed so they sit on the painted water. The canoe shows the player's chosen painted detective using their existing portrait thumbnail from `assets/img/avatars/thumbs/`. Landmark tokens in Place the Landmarks use the Field Journal card thumbnails. License: original work for this game.

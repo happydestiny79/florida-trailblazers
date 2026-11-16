@@ -222,7 +222,7 @@ table.lb tr.top1 { background: #fff6cf; }
 .id-rank { display: inline-block; background: #fff3c4; border: 1.5px solid #c9a227; color: #3a2a12; font-weight: 800; font-size: 11px; padding: 3px 8px; border-radius: 99px; margin: 0 0 8px; }
 .id-field { font-size: 12px; color: #3a2a12; margin: 0 0 3px; } .id-field b { color: #14213d; }
 .id-rule { height: 2px; margin: 2px 14px 0; background: linear-gradient(90deg, transparent, #c9a227 12%, #c9a227 88%, transparent); }
-.id-badges-wrap { padding: 12px 14px 56px; }
+.id-badges-wrap { padding: 12px 14px 8px; }
 .id-badges { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .id-empty { margin: 0; font-size: .85rem; color: #3a2a12; }
 .id-badge { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; border: 2px solid #c9a227; box-shadow: 0 2px 6px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.4); position: relative; }
@@ -231,7 +231,7 @@ table.lb tr.top1 { background: #fff6cf; }
 .id-badge.compass { background: radial-gradient(circle at 35% 30%, #7ddea8, #1f8a5b 55%, #146344); }
 .id-badge.coin { background: radial-gradient(circle at 35% 30%, #ffe27a, #ffb703 55%, #c48402); }
 .id-badge.book { background: radial-gradient(circle at 35% 30%, #c4a0ff, #6d28d9 55%, #4c1d95); }
-.id-stamp { position: absolute; right: 12px; bottom: 44px; width: 108px; height: 108px; border-radius: 50%; border: 4px double #9b2c2c; color: #9b2c2c; display: flex; flex-direction: column; align-items: center; justify-content: center; transform: rotate(-16deg); opacity: .88; background: rgba(155,44,44,.05); box-shadow: inset 0 0 0 3px rgba(155,44,44,.35); pointer-events: none; }
+.id-stamp { position: relative; right: auto; bottom: auto; width: 86px; height: 86px; margin: 0 16px 10px auto; border-radius: 50%; border: 4px double #9b2c2c; color: #9b2c2c; display: flex; flex-direction: column; align-items: center; justify-content: center; transform: rotate(-16deg); opacity: .88; background: rgba(155,44,44,.05); box-shadow: inset 0 0 0 3px rgba(155,44,44,.35); pointer-events: none; flex-shrink: 0; }
 .id-stamp .ring { position: absolute; inset: 7px; border-radius: 50%; border: 1.5px solid rgba(155,44,44,.7); }
 .id-stamp .s-top { font-size: 8px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
 .id-stamp .s-mid { font-size: 12px; font-weight: 800; letter-spacing: .3px; line-height: 1.05; text-align: center; margin: 2px 0; }
@@ -240,4 +240,4 @@ table.lb tr.top1 { background: #fff6cf; }
 @keyframes id-stamp { 0% { transform: rotate(-16deg) scale(1.8); opacity: 0; } 55% { transform: rotate(-16deg) scale(1.05); opacity: 1; } 100% { transform: rotate(-16deg) scale(1); opacity: .88; } }
 @media (prefers-reduced-motion: reduce) { .id-stamp.animate { animation: none; } }
 .id-foot { background: #14213d; color: #ffe7a3; font-size: 9px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; text-align: center; padding: 8px 12px; border-top: 3px solid #c9a227; }
-@media (max-width: 420px) { .id-photo { flex-basis: 110px; width: 110px; height: 110px; } .id-stamp { width: 92px; height: 92px; } }
+@media (max-width: 420px) { .id-photo { flex-basis: 110px; width: 110px; height: 110px; } .id-stamp { width: 76px; height: 76px; } .id-stamp .s-mid { font-size: 11px; } }

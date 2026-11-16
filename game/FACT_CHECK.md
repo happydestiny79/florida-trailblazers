@@ -178,3 +178,35 @@ Each caption was written from the source file's own description (Wikimedia Commo
 ## Other notes for reviewers
 - Social Studies benchmark wording in the Teacher view is copied from *Florida's State Academic Standards – Social Studies, 2026* (Ref-19653): <https://flrules.org/gateway/reference.asp?No=Ref-19653>.
 - Sensitive content (slavery and freedom seekers at Fort Mose; disease, forced labor and population loss among the Timucua; the 1704 attacks and the end of Mission San Luis) is told briefly and factually. A teacher should preview it.
+
+## v7: The Swamp Fox Heist (fictional layer)
+
+The Swamp Fox, Gator Gil and Minnow are made-up characters, like Penny Pinch and the Founding Stone. The treasures in this chase are also made up:
+
+- **A historic Spanish cannon from the Castillo gun deck** — the Castillo de San Marcos really has historic cannons on the gun deck (National Park Service). In the story she steals one; the game tells students the real cannons still stand at the fort.
+- **A replica militia drum from the Fort Mose visitor exhibit** — Fort Mose's free Black militia really did help defend St. Augustine (see `mose1738` and related facts above). The drum itself is a made-up exhibit replica, not a catalogued artifact.
+- **A replica church bell from Mission San Luis** — in 1704 the people of San Luis really did bury church bells, hoping to return (see `churchBells` above). The bell in this story is a made-up replica.
+
+
+
+---
+
+## v8 Field Journal collectible cards
+
+Each card uses 1–2 kid-level sentences. Historical and geographic claims are taken from facts already checked in this file (or from the game's Local Flavor caption). Wildlife claims are short, conservative natural-history statements from U.S. Fish and Wildlife Service species pages.
+
+| Card | Awarded | Kid-level facts | Source relied on |
+|---|---|---|---|
+| Castillo de San Marcos | sa1 (St. Augustine) | Built 1672–1695 to protect St. Augustine. Made of coquina, a stone formed from tiny seashells. | Game facts `castilloBuilt`, `coquina` — NPS Castillo / NPS coquina page |
+| Coquina stone | sa1 or sa1wall | Formed over thousands of years as tiny coquina-clam shells were naturally glued into limestone. "Coquina" is Spanish for "tiny shell." | Game fact `coquinaFormed` — NPS coquina page |
+| Datil pepper | St. Augustine Local Flavor food postcard (when the datil postcard is in view) | Datil peppers are part of St. Augustine's food traditions. They taste very hot! | Game Local Flavor caption (already in the case). No further historical claim is made. |
+| Fort Mose | fm1 | In 1738 the Spanish governor set aside land about 2 miles north of St. Augustine for Fort Mose (say "moh-SAY"). It was the first legally sanctioned free African settlement in what is now the United States. | Game facts `mose1738`, `moseFirst` — Florida State Parks / Florida Museum |
+| Great egret | fm1marsh | A tall white wading bird with a long yellow bill and black legs. It hunts for fish in shallow Florida waters, including salt marshes like the ones around Fort Mose. | U.S. Fish and Wildlife Service, Great Egret species information; marsh setting from game fact `moseToday` |
+| Florida's Historic Capitol | tl1 | In 1824 Tallahassee was chosen as Florida's capital, mostly because it was about halfway between St. Augustine and Pensacola. The brick Capitol was finished in 1845 and is now the Historic Capitol museum. | Game facts `capital1824`, `historicCapitol` — Florida Department of State |
+| Apalachee council house | sl1 | A huge round building about 120 feet across. Apalachee leaders met there every day to discuss community business. | Game fact `councilHouse` — Mission San Luis visitor guide |
+| Florida manatee | Marsh Canoe Dash (bonus mini-game) | The Florida manatee is a kind of West Indian manatee. These gentle sea cows live in Florida's warm rivers, springs, and coastal waters and eat water plants. | U.S. Fish and Wildlife Service, Florida manatee (*Trichechus manatus latirostris*) |
+| A map of Florida | Place the Landmarks (bonus mini-game) | Florida is a peninsula — land with water on three sides. St. Augustine and Fort Mose are on the northeast Atlantic coast; Tallahassee, the capital since 1824, is in the panhandle. | Game facts `capital1824`, `geoMoseNorth`, `geoWest` |
+
+Canoe Dash end-screen fact: `moseToday` (no buildings from Fort Mose remain; visitors see the marsh land where it stood). Map-sort end-screen fact: `capital1824`.
+
+Painted card art is original game art (graphic-novel style). Landmark and food cards used the game's already-licensed photographs as likeness references. Wildlife and map cards were painted from careful descriptions. They are not photographs of the real sites or animals.

@@ -143,6 +143,7 @@ var READALOUD = (function () {
     job = null;
     var s = synth();
     if (s) { try { s.cancel(); } catch (e) {} }
+    if (window.SFX && SFX.unduck) SFX.unduck();
   }
 
   function textOf(el) {
@@ -205,12 +206,14 @@ var READALOUD = (function () {
     }
     roots.forEach(function (r) { r.classList.add("ra-playing"); });
 
+    if (window.SFX && SFX.duck) SFX.duck();
     function finish() {
       if (!job || job.utt !== u) return;
       if (job.timer) clearTimeout(job.timer);
       job.roots.forEach(unwrap);
       clearHighlight();
       job = null;
+      if (window.SFX && SFX.unduck) SFX.unduck();
       if (opts.onend) opts.onend();
     }
     u.onend = finish;
@@ -332,6 +335,8 @@ var READALOUD = (function () {
 
   function enhance(root) {
     if (!hasSynth() || !root || !root.querySelectorAll) return;
+    root.querySelectorAll(".fox-note").forEach(function (el) { attachBlock(el, "Read this calling card aloud"); });
+    root.querySelectorAll(".fox-intro-text, .fox-capture-text").forEach(function (el) { attachBlock(el, "Read this aloud"); });
     root.querySelectorAll(".passage").forEach(function (el) { attachBlock(el, "Read this passage aloud"); });
     root.querySelectorAll(".prompt").forEach(function (el) { attachBlock(el, "Read this question aloud"); });
     root.querySelectorAll("section.panel > p, .modal-body > p, .iv-a, #partner-bubble, .partner-bubble, .lf-instruction, .lf-clue, .lf-photo-text, .lf-spot > p").forEach(function (el) {
@@ -534,6 +539,7 @@ var READALOUD = (function () {
     speakText: speakText,
     enhance: enhance,
     afterScreen: afterScreen,
+    attachBlock: attachBlock,
     settingsHtml: settingsHtml,
     wireSettings: wireSettings,
     openSettings: openSettings,
