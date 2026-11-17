@@ -60,7 +60,19 @@
     var c = document.getElementById("wid"); if (c) c.onclick = function () { V3.showIdCard(V3.players()[0], { stamp: true, stampAnimate: true }); }; };
 
   /* ---------- title ---------- */
-  V3.titleButtons = function () { return '<div class="btn-row2"><button class="btn" id="avatar">🧑 My Detective</button><button class="btn" id="classbtn">🏆 Class &amp; Leaderboard</button></div>'; };
+  V3.titleButtons = function () {
+    var who = "";
+    try {
+      var sv = JSON.parse(localStorage.getItem(SAVE_KEY) || "null");
+      if (sv && sv.name) who = sv.name;
+      else if (sv && sv.team && sv.team[0]) who = sv.team[0];
+    } catch (e) { who = ""; }
+    var art = who && V3.avatarFace
+      ? V3.avatarFace(who, "happy", "med")
+      : '<img class="title-tile-art" src="assets/img/title/icon_badge.webp" alt="">';
+    return '<button type="button" class="title-tile" id="avatar">' + art + '<span>My Detective</span></button>' +
+      '<button type="button" class="title-tile" id="classbtn"><img class="title-tile-art" src="assets/img/title/icon_trophy.webp" alt=""><span>Class &amp; Leaderboard</span></button>';
+  };
   V3.wireTitle = function () { document.getElementById("avatar").onclick = function () { avatarBuilder(null, X().title); }; document.getElementById("classbtn").onclick = function () { classScreen(X().title); }; };
 
   /* ---------- who's playing? (solo or team) ---------- */

@@ -1,6 +1,6 @@
 # Florida Trailblazers
 
-**Florida Trailblazers: The Stolen Founding Stone** (version 8) is a finished, self-contained HTML5 game for Florida 4th-grade Social Studies. Players travel early Florida, read maps, collect clues, and catch a fictional thief. The history is real; the case is made up.
+**Florida Trailblazers: The Stolen Founding Stone** (version 9) is a finished, self-contained HTML5 game for Florida 4th-grade Social Studies. Players travel early Florida, read maps, collect clues, and catch a fictional thief. The history is real; the case is made up.
 
 Version 3 added painted character portraits with expressions, interviews, dossiers, warrants, a torn map, a magnifier, a villain map, a local leaderboard with share codes, team mode, ranks, and an avatar builder.
 
@@ -13,6 +13,8 @@ Version 3 added painted character portraits with expressions, interviews, dossie
 **Version 7 — The Swamp Fox Heist:** A kid-safe comic storyline adds the **Swamp Fox**, a raccoon-masked thief, as an optional bonus chase. He leaves calling cards; a **Closing in** meter tracks the pursuit. When students corner him, a capture scene adds his **mugshot** to the **Detective ID card**. Henchmen **Gator Gil** and **Minnow** join the fun. Original **Web Audio** music and SFX are **off by default**, with **Music** and **Effects** sliders plus a teacher **Classroom quiet** switch.
 
 **Version 8 — Florida Field Journal + mini-games:** Collect **9 painted journal cards** with kid-level read-aloud facts about Florida history and nature. Teachers get a **progress** view of journal collection. Two optional mini-games—**Marsh Canoe Dash** and **Place the Landmarks**—add movement and map skills practice.
+
+**Version 9 — Painted title screen:** The home screen is redesigned for younger players. A **painted hero** shows Penny Pinch and kid detectives at the Castillo; **painted icons** replace emoji on the main controls. A large **New case** button leads the layout, with a **2×2 tile grid** for My Detective, Class & Leaderboard, Field Journal, and Swamp Fox. **Teacher**, **Read aloud**, and **Sound** move to a compact icon bar at the top. Styles live in `game/title.css`; art in `game/assets/img/title/`. Credits for the new title art are in [`game/CREDITS.md`](game/CREDITS.md).
 
 Attribution and fact-review notes live in [`game/CREDITS.md`](game/CREDITS.md) and [`game/FACT_CHECK.md`](game/FACT_CHECK.md).
 

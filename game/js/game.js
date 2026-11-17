@@ -740,13 +740,33 @@
     var inp = document.getElementById("pname"), nm = inp.value;
     inp.oninput = function () { nm = inp.value; }; inp.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); nm = inp.value; closeModal(true); start(nm); } }; inp.focus();
     function start(name) { clearSave(); S = fresh(); S.name = String(name || "").trim().slice(0, 24); enter(SCENES.intro); save(); render(); } }
+  function bonusPreview() {
+    modal("Swamp Fox bonuses",
+      '<div class="bonus-preview"><img class="fox-shot" src="assets/img/title/icon_fox.webp" alt="The Swamp Fox, a sly thief in a raccoon mask, holding a calling card">' +
+      '<p>While you solve the main case, watch for the <b>Swamp Fox</b>! She leaves painted calling cards and hides replica treasures along the trail.</p>' +
+      '<p>Each right answer helps you close in on this bonus chase. Catch her at the end — and get her mugshot for your Detective ID!</p>' +
+      '<p>You will also get bonus mini-games along the way, like <b>Marsh Canoe Dash</b> and <b>Place the Landmarks</b>.</p>' +
+      '<p class="small">This is a bonus hunt. The main case is still The Stolen Founding Stone.</p></div>',
+      [{ label: "Got it" }], { escClose: true });
+  }
   function title() {
     stopSpeak(); closeModal(true); var sv = load(); var canContinue = sv && sv.scene && sv.scene !== "win" && sv.log;
-    app.innerHTML = photoBg("castillo_aerial", 1) + '<main class="title-screen"><div class="title-card"><div class="title-kicker">🔎 A Florida history mystery</div><h1>' + esc(GAME_TITLE) + '</h1><h2>' + esc(GAME_SUBTITLE) + '</h2>' +
-      '<p>A junior history detective adventure for 3rd and 4th graders. Travel to real places in early Florida, read real sources, collect clues, and catch the thief!</p>' +
-      '<div class="btn-col"><button class="btn big primary" id="new">▶ New case</button>' + (canContinue ? '<button class="btn big" id="cont">⏯ Continue case' + (sv.name ? " (" + esc(sv.name) + ")" : "") + '</button>' : "") +
-      (window.V3 ? V3.titleButtons() : "") + '<button class="btn" id="teacher">🍎 Teacher view</button>' + (window.READALOUD && READALOUD.available() ? '<button class="btn" id="ra-open">🔊 Read aloud</button>' : "") + '<button class="btn" id="snd-open">🔊 Sound</button>' + '<div class="btn-row2"><button class="btn ghost" id="about">About</button><button class="btn ghost" id="credits">📜 Credits</button>' + soundBtn() + '</div></div>' +
-      '<p class="small">Version ' + esc(GAME_VERSION) + ' • Works offline • Sound is off until you turn it on</p></div>' + captionChip("castillo_aerial") + '</main>';
+    var topbar = '<div class="title-topbar">' +
+      '<button type="button" class="title-iconbtn" id="teacher" aria-label="Teacher view"><img src="assets/img/title/icon_teacher.webp" alt="">Teacher</button>' +
+      (window.READALOUD && READALOUD.available() ? '<button type="button" class="title-iconbtn" id="ra-open" aria-label="Read aloud"><img src="assets/img/title/icon_readaloud.webp" alt="">Read aloud</button>' : "") +
+      '<button type="button" class="title-iconbtn" id="snd-open" aria-label="Sound"><img src="assets/img/title/icon_sound.webp" alt="">Sound</button>' +
+      soundBtn() + '</div>';
+    app.innerHTML = photoBg("castillo_aerial", 1) + '<main class="title-screen title-v9">' + topbar +
+      '<div class="title-card"><div class="title-hero"><img src="assets/img/title/hero.webp" alt="Penny Pinch and junior detectives at the Castillo de San Marcos, ready to start a case">' +
+      '<div class="title-hero-copy"><div class="title-kicker">A Florida history mystery</div><h1>' + esc(GAME_TITLE) + '</h1></div></div>' +
+      '<h2>' + esc(GAME_SUBTITLE) + '</h2>' +
+      '<p class="title-blurb">A junior history detective adventure for 3rd and 4th graders. Travel to real places in early Florida, collect clues, and catch the thief!</p>' +
+      '<div class="btn-col title-actions"><button type="button" class="btn big primary title-new title-glow" id="new"><img src="assets/img/title/icon_case.webp" alt=""> New case</button>' +
+      (canContinue ? '<button type="button" class="btn big title-cont" id="cont">Continue case' + (sv.name ? " (" + esc(sv.name) + ")" : "") + '</button>' : "") + '</div>' +
+      '<div class="title-tiles">' + (window.V3 ? V3.titleButtons() : "") +
+      '<button type="button" class="title-tile" id="bonus" aria-label="Swamp Fox bonus and mini-games"><img class="title-tile-art" src="assets/img/title/icon_fox.webp" alt=""><span>Swamp Fox</span></button></div>' +
+      '<div class="btn-row2 title-foot"><button type="button" class="btn ghost" id="about">About</button><button type="button" class="btn ghost" id="credits">Credits</button></div>' +
+      '<p class="small">Version ' + esc(GAME_VERSION) + ' • Works offline</p></div>' + captionChip("castillo_aerial") + '</main>';
     document.getElementById("new").onclick = newCase;
     if (canContinue) document.getElementById("cont").onclick = function () { S = sv; render(); };
     document.getElementById("teacher").onclick = teacherView;
@@ -755,6 +775,7 @@
     wireSound(); var cc = app.querySelector(".cap-chip"); if (cc) cc.onclick = function () { imageInfo("castillo_aerial"); };
     var ra = document.getElementById("ra-open"); if (ra && window.READALOUD) ra.onclick = function () { READALOUD.openSettings(); };
     var so = document.getElementById("snd-open"); if (so && window.SFX && SFX.openSettings) so.onclick = function () { SFX.openSettings(); };
+    var bonus = document.getElementById("bonus"); if (bonus) bonus.onclick = bonusPreview;
     if (window.SFX && SFX.setMode) SFX.setMode("title");
     if (window.V3) V3.wireTitle();
   }
@@ -777,6 +798,7 @@
       (window.HEIST && HEIST.creditsHtml ? HEIST.creditsHtml() : "") +
       (window.JOURNAL && JOURNAL.creditsHtml ? JOURNAL.creditsHtml() : "") +
       (window.MINI && MINI.creditsHtml ? MINI.creditsHtml() : "") +
+      '<h2>Title screen art</h2><p class="small">The title hero and menu icons in <code>assets/img/title/</code> are original painted art made for this game (graphic-novel style). They depict fictional characters (Penny Pinch, junior detectives, and the Swamp Fox), not real people. The Castillo in the hero painting was inspired by a photograph already used and credited in this game. License: original work for this game.</p>' +
       '<h2>Story</h2><p class="small">The Founding Stone, the thief, the suspects, Detective ' + PARTNER_NAME + ', Professor Pelican, Ranger Rosa, Ranger Dee, Guide Tomás, the Swamp Fox, Gator Gil and Minnow are made up. No real people are shown as characters.</p></main>';
     document.getElementById("back").onclick = back || title; window.scrollTo(0, 0);
   }
