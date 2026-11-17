@@ -376,7 +376,7 @@ window.JOURNAL = (function () {
     V3.afterFrame = function (sc) { _af(sc); afterFrame(sc); };
     if (_th) V3.teacherHtml = function () { return _th() + teacherHtml(); };
     if (_tw) V3.wireTeacher = function () { _tw(); };
-    if (_tb) V3.titleButtons = function () { return _tb() + '<button class="btn" id="journal">📒 Field Journal</button>'; };
+    if (_tb) V3.titleButtons = function () { return _tb() + '<button type="button" class="title-tile" id="journal"><img class="title-tile-art" src="assets/img/title/icon_journal.webp" alt=""><span>Field Journal</span></button>'; };
     if (_wt) V3.wireTitle = function () { _wt(); var j = document.getElementById("journal"); if (j) j.onclick = function () { open({ from: "title" }); }; };
     if (_he) V3.hudExtra = function (sc) { return _he(sc); };
     if (_wh) V3.wireHudExtra = function () { _wh(); };

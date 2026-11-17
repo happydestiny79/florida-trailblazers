@@ -1,4 +1,4 @@
-FLORIDA TRAILBLAZERS: Case 1, The Stolen Founding Stone (version 8.0 preview)
+FLORIDA TRAILBLAZERS: Case 1, The Stolen Founding Stone (version 9.0 preview)
 
 HOW TO PLAY
   Double-click index.html. It opens in any modern browser (Chrome/Chromebook, Edge, Firefox, Safari),
@@ -11,6 +11,12 @@ HOW TO PLAY
   Read-aloud uses the device's built-in voice (no audio files). Tap a 🔊 button next to a passage,
   clue, question, answer or Swamp Fox calling card, or turn on "Read to me" so each new screen is
   read automatically. Music quietly ducks while the voice is speaking.
+
+WHAT'S NEW IN V9 PREVIEW
+  - Painted title screen: a hero scene with Penny Pinch and junior detectives at the Castillo
+    de San Marcos, a big glowing New case button, and a 2x2 grid of picture tiles (My Detective,
+    Class & Leaderboard, Field Journal, Swamp Fox). Teacher view, Read aloud, and Sound sit in
+    a top bar as painted icon buttons.
 
 WHAT'S NEW IN V7 PREVIEW
   - The Swamp Fox Heist: a sly, painted thief in a raccoon mask and a gator-scale vest is snatching
