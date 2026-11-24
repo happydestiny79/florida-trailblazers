@@ -328,6 +328,10 @@ button { font: inherit; color: inherit; }
   .map-svg .map-title { font-size: 34px; }
   .map-svg .map-water { font-size: 26px; }
   .map-svg .map-credit { font-size: 18px; }
+  .map-svg.tampa-bay .map-label { font-size: 26px; stroke-width: 5px; }
+  .map-svg.tampa-bay .map-water { font-size: 20px; stroke-width: 4px; }
+  .map-svg.tampa-bay .map-title { font-size: 26px; }
+  .map-svg.tampa-bay .map-credit { font-size: 14px; }
   .cap-chip span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -340,3 +344,6 @@ button { font: inherit; color: inherit; }
   body { background: #fff; }
   details { display: block; } details > * { display: block; }
 }
+
+.map-svg .map-water, .map-svg .map-credit, .map-svg .map-title, .map-svg .legend, .map-svg .scalebar, .map-svg .compass { pointer-events: none; }
+.map-svg .map-key-btn, .map-svg .map-legend-pop.is-open { pointer-events: auto; }

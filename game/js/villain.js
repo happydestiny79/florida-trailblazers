@@ -52,9 +52,21 @@ var HEIST = (function () {
     if (typeof st.heist.meter !== "number") st.heist.meter = 0;
     return st;
   }
+  function stops() {
+    var pack = window.CASE && CASE.heistStops && CASE.heistStops();
+    return pack || STOPS;
+  }
+  var CLUES_CASE2 = {
+    2:  { id: "c2tb", text: "A muddy paw print points east, across Tampa Bay." },
+    4:  { id: "c4tb", text: "Someone asked a ranger about a wooden fort where a river meets the harbor." },
+    6:  { id: "c6tb", text: "Minnow was seen watching the silver towers beside the river." },
+    8:  { id: "c8tb", text: "Gator Gil asked for a street of brick cigar factories." },
+    10: { id: "c10tb", text: "She's heading for the deepwater port!" }
+  };
+  function cluesFor() { return (window.CASE && CASE.id() === "case2") ? CLUES_CASE2 : CLUES; }
   function stopForScene(id) {
     var i, s;
-    for (i = 0; i < STOPS.length; i++) { s = STOPS[i]; if (s.at.indexOf(id) >= 0) return s; }
+    var list = stops(); for (i = 0; i < list.length; i++) { s = list[i]; if (s.at.indexOf(id) >= 0) return s; }
     return null;
   }
   function markCard(id) {
@@ -87,7 +99,7 @@ var HEIST = (function () {
       '<img class="fox-pose big" src="' + foxImg("taunt") + '" alt="The Swamp Fox, a sly thief in a raccoon mask and a gator-scale vest, smirking and holding a calling card" draggable="false">' +
       '<div class="fox-intro-text">' +
         '<p class="fox-bonus-tag">Bonus case thread</p>' +
-        '<p>Your <b>main case</b> is still the Founding Stone — and catching <b>Penny Pinch</b>.</p>' +
+        '<p>Your <b>main case</b> is still ' + esc((window.CASE && CASE.meta) ? CASE.meta().title : 'The Stolen Founding Stone') + ' — and catching <b>Penny Pinch</b>.</p>' +
         '<p>This is a separate <b>bonus chase</b>: while you work that main case, a second made-up thief called <b>the Swamp Fox</b> is snatching exhibit treasures at every stop.</p>' +
         '<p>Look for her painted calling cards. Each right answer helps you close in on this bonus case. Catch her at the end — and get her mugshot for your Detective ID!</p>' +
         '<p class="small">(The Swamp Fox, Gator Gil and Minnow are made up, just like Penny Pinch. The places and history facts are real.)</p>' +
@@ -154,7 +166,7 @@ var HEIST = (function () {
           var p = V3.profile(n);
           p.captured = p.captured || [];
           var has = p.captured.some(function (c) { return c.id === "fox"; });
-          if (!has) p.captured.push({ id: "fox", name: "The Swamp Fox", at: Date.now(), caseTitle: "Case 1: The Stolen Founding Stone" });
+          if (!has) p.captured.push({ id: "fox", name: "The Swamp Fox", at: Date.now(), caseTitle: (window.CASE && CASE.meta) ? CASE.meta().title : "Case 1: The Stolen Founding Stone" });
           V3.saveProfile(p);
         });
       }
@@ -230,7 +242,7 @@ var HEIST = (function () {
         else READALOUD.afterScreen(el);
       }
     }
-    if (panel && st.scene === "intro" && !panel.querySelector(".fox-intro")) {
+    if (panel && st.scene === ((window.CASE && CASE.introId && CASE.introId()) || "intro") && !panel.querySelector(".fox-intro")) {
       var intro = X().el(introHtml());
       var h = panel.querySelector("h2");
       if (h && h.parentNode) h.parentNode.insertBefore(intro, h.nextSibling);
@@ -248,7 +260,7 @@ var HEIST = (function () {
     if (st.heist.answered.indexOf(id) >= 0) return;
     st.heist.answered.push(id);
     if (st.heist.meter < METER_MAX) st.heist.meter += 1;
-    var clue = CLUES[st.heist.meter];
+    var clue = cluesFor()[st.heist.meter];
     if (clue && st.heist.clues.indexOf(clue.id) < 0) {
       st.heist.clues.push(clue.id);
       if (X() && X().toast) X().toast("🦝 Bonus chase clue: " + clue.text);
@@ -276,7 +288,7 @@ var HEIST = (function () {
   hook();
 
   return {
-    STOPS: STOPS, FOX: FOX, METER_MAX: METER_MAX, CLUES: CLUES,
+    STOPS: STOPS, stops: stops, FOX: FOX, METER_MAX: METER_MAX, CLUES: CLUES,
     ensure: ensure, init: init, stopForScene: stopForScene,
     cardHtml: cardHtml, introHtml: introHtml, showIntro: showIntro,
     meterHud: meterHud, captureHtml: captureHtml, captureNow: captureNow,

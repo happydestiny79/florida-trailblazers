@@ -16,7 +16,11 @@ Version 3 added painted character portraits with expressions, interviews, dossie
 
 **Version 9 — Painted title screen:** The home screen is redesigned for younger players. A **painted hero** shows Penny Pinch and kid detectives at the Castillo; **painted icons** replace emoji on the main controls. A large **New case** button leads the layout, with a **2×2 tile grid** for My Detective, Class & Leaderboard, Field Journal, and Swamp Fox. **Teacher**, **Read aloud**, and **Sound** move to a compact icon bar at the top. Styles live in `game/title.css`; art in `game/assets/img/title/`. Credits for the new title art are in [`game/CREDITS.md`](game/CREDITS.md).
 
-Attribution and fact-review notes live in [`game/CREDITS.md`](game/CREDITS.md) and [`game/FACT_CHECK.md`](game/FACT_CHECK.md).
+**Version 10 — Read to me:** A single discreet floating **Read to me** button replaces per-item speaker buttons. Students tap a paragraph, clue, or question to hear it read aloud; **Read to me** still auto-reads each new screen when enabled.
+
+**Version 11 — Case 2 (Tampa Bay):** A **painted case picker** on **New case** lets students start **Case 1: The Stolen Founding Stone** (fully playable) or **Case 2: The Cigar Box Code** (Tampa Bay and Ybor City). Case 2 chapters 1–2 are playable at **Weedon Island / Safety Harbor** and **Fort Brooke**, with a **painted Tampa Bay explorer map** (coastline from USGS; markers at real lat/long). Chapters 3–5 (Plant Hotel, Ybor City, Port of Tampa) end with a **Coming soon** cliffhanger after chapter 2. **Per-case saves**, **Field Journal**, and **Teacher** view track each case separately; older Case 1 saves auto-migrate. Case 2 attribution and fact review: [`game/CREDITS_case2.md`](game/CREDITS_case2.md) and [`game/FACT_CHECK_case2.md`](game/FACT_CHECK_case2.md).
+
+Attribution and fact-review notes live in [`game/CREDITS.md`](game/CREDITS.md), [`game/CREDITS_case2.md`](game/CREDITS_case2.md), [`game/FACT_CHECK.md`](game/FACT_CHECK.md), and [`game/FACT_CHECK_case2.md`](game/FACT_CHECK_case2.md).
 
 **Play it:** https://happydestiny79.github.io/florida-trailblazers/
 

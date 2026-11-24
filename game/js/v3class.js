@@ -12,9 +12,9 @@
   function board(weekOnly) { var all = V3.scores(), ws = weekStart(); return all.filter(function (e) { return !weekOnly || e.at >= ws; }).sort(function (a, b) { return b.total - a.total || a.day - b.day || a.at - b.at; }); }
   function boardHtml(weekOnly, limit) { var rows = board(weekOnly).slice(0, limit || 20);
     if (!rows.length) return '<p class="small"><i>No finished cases ' + (weekOnly ? "this week" : "yet") + '. Finish a case to get on the board!</i></p>';
-    return '<div class="tscroll"><table class="bench lb"><thead><tr><th>#</th><th>Detective(s)</th><th>Total</th><th>Case score</th><th>Bonus</th><th>Rank</th><th>Finished</th></tr></thead><tbody>' + rows.map(function (e, i) {
+    return '<div class="tscroll"><table class="bench lb"><thead><tr><th>#</th><th>Detective(s)</th><th>Case</th><th>Total</th><th>Case score</th><th>Bonus</th><th>Rank</th><th>Finished</th></tr></thead><tbody>' + rows.map(function (e, i) {
       var who = e.who.map(function (n) { return '<span class="lb-who">' + V3.avatarFace(n, i === 0 ? "happy" : "neutral", "mini") + esc(n) + '</span>'; }).join(" ");
-      return '<tr' + (i < 3 ? ' class="top' + (i + 1) + '"' : "") + '><td>' + (["🥇", "🥈", "🥉"][i] || i + 1) + '</td><td>' + (e.team ? "👥 " : "") + who + (e.dev !== V3.deviceId() ? ' <span class="pill">imported</span>' : "") + '</td><td><b>' + e.total + '</b></td><td>' + e.score + '</td><td>' + ("+" + e.bonus) + '</td><td>' + esc(X().RANKS[e.rank || 0].name) + '</td><td class="small">' + new Date(e.at).toLocaleDateString() + '</td></tr>'; }).join("") + '</tbody></table></div>'; }
+      return '<tr' + (i < 3 ? ' class="top' + (i + 1) + '"' : "") + '><td>' + (["🥇", "🥈", "🥉"][i] || i + 1) + '</td><td>' + (e.team ? "👥 " : "") + who + (e.dev !== V3.deviceId() ? ' <span class="pill">imported</span>' : "") + '</td><td class="small">' + esc(e.caseTitle || (e.caseId === 'case2' ? 'The Cigar Box Code' : 'The Stolen Founding Stone')) + '</td><td><b>' + e.total + '</b></td><td>' + e.score + '</td><td>' + ("+" + e.bonus) + '</td><td>' + esc(X().RANKS[e.rank || 0].name) + '</td><td class="small">' + new Date(e.at).toLocaleDateString() + '</td></tr>'; }).join("") + '</tbody></table></div>'; }
 
   /* ---------- share codes (compact text, made on this device; nothing is sent anywhere) ---------- */
   function b64u(str) { return btoa(unescape(encodeURIComponent(str))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
@@ -42,7 +42,7 @@
     var speed = st.relaxed ? 0 : (st.day <= 3 ? 10 : st.day <= START.deadline ? 5 : 0), exploration = st.localFlavor ? st.localFlavor.bonus || 0 : 0, bonus = (st.relaxed ? 0 : speed + firsts * 5) + exploration, total = score + bonus;
     var who = V3.players().length ? V3.players() : ["Guest"], newGear = [];
     if (!st.v3.scored) { st.v3.scored = true; var all = V3.scores();
-      all.push({ id: st.runId, who: who, team: !!st.team, score: score, bonus: bonus, total: total, rank: rankIdx(rank.name), at: Date.now(), day: st.day, relaxed: !!st.relaxed, dev: V3.deviceId() }); V3.saveScores(all);
+      all.push({ id: st.runId, who: who, team: !!st.team, score: score, bonus: bonus, total: total, rank: rankIdx(rank.name), at: Date.now(), day: st.day, relaxed: !!st.relaxed, dev: V3.deviceId(), caseId: st.caseId || (window.CASE && CASE.id()) || "case1", caseTitle: (window.CASE && CASE.meta) ? CASE.meta(st.caseId || CASE.id()).title : "The Stolen Founding Stone" }); V3.saveScores(all);
       who.forEach(function (n) { if (n === "Guest") return; var p = V3.profile(n); p.cases++; p.bestScore = Math.max(p.bestScore || 0, score);
         if (p.bestRank == null || rankIdx(rank.name) > p.bestRank) p.bestRank = rankIdx(rank.name);
         st.badges.forEach(function (b) { if (p.badgesEver.indexOf(b) < 0) p.badgesEver.push(b); UNLOCKS.forEach(function (u) { if (u.badge === b && p.unlocked.indexOf(u.id) < 0) { p.unlocked.push(u.id); newGear.push(u.name); } }); });
@@ -63,7 +63,13 @@
   V3.titleButtons = function () {
     var who = "";
     try {
-      var sv = JSON.parse(localStorage.getItem(SAVE_KEY) || "null");
+      var sv = null;
+      if (window.CASE && CASE.continuable) {
+        var list = CASE.continuable(), last = CASE.lastId && CASE.lastId();
+        sv = (list.filter(function (c) { return c.id === last; })[0] || list[0] || {}).save || CASE.readSave(last) || CASE.readSave("case1");
+      } else {
+        sv = JSON.parse(localStorage.getItem(SAVE_KEY) || "null");
+      }
       if (sv && sv.name) who = sv.name;
       else if (sv && sv.team && sv.team[0]) who = sv.team[0];
     } catch (e) { who = ""; }
@@ -186,4 +192,12 @@
     document.getElementById("impcode").onclick = function () { var r = importCode(document.getElementById("codein").value), m = document.getElementById("impmsg");
       if (!r.ok) { m.className = "feedback try"; m.textContent = r.msg; return; } T(); setTimeout(function () { var m2 = document.getElementById("impmsg"); m2.className = "feedback good"; m2.textContent = "✅ Imported " + r.added + " score" + (r.added === 1 ? "" : "s") + (r.skipped ? " (" + r.skipped + " already here or unreadable, skipped)" : "") + "."; document.getElementById("t-class").scrollIntoView(); }, 0); }; };
   V3.exportCode = exportCode; V3.importCode = importCode; V3.board = board; V3.weekStart = weekStart;
+  (function migrateScores() {
+    var all = V3.scores(), changed = false;
+    all.forEach(function (e) {
+      if (!e.caseId) { e.caseId = "case1"; changed = true; }
+      if (!e.caseTitle) { e.caseTitle = e.caseId === "case2" ? "The Cigar Box Code" : "The Stolen Founding Stone"; changed = true; }
+    });
+    if (changed) V3.saveScores(all);
+  })();
 })();

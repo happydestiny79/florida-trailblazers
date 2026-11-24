@@ -9,7 +9,7 @@ var LocalFlavor = (function () {
     if (!s.localFlavor) s.localFlavor = { solved: {}, bonus: 0, clues: {} };
     return s.localFlavor;
   }
-  var arrivals = { sa1: "staug", fm1: "mose", tl1: "sanluis", sl1: "sanluis" };
+  var arrivals = { sa1: "staug", fm1: "mose", tl1: "sanluis", sl1: "sanluis", wi1: "weedon", fb1: "fortbrooke" };
   var words = {
     tradition: ["tradition", "A way of doing something that people pass from one generation to the next."],
     boardwalk: ["boardwalk", "A path made of wooden boards. It lets people walk above wet or sandy ground."],
@@ -64,7 +64,7 @@ var LocalFlavor = (function () {
       (p.licenseUrl ? ' · <a href="' + esc(p.licenseUrl) + '" target="_blank" rel="noopener">' + esc(p.license) + '</a>' : ' · Public domain') + '. CC BY-SA photos and their resized copies keep the listed license.</p></details>';
   }
   function photo(p) {
-    var v = VOCAB[p.vocab];
+    var v = VOCAB[p.vocab] || { word: p.vocab, def: '' };
     return '<article class="lf-postcard" data-photo="' + p.id + '"><div class="lf-tape" aria-hidden="true"></div><img src="' + esc(p.file) + '" alt="' + esc(p.caption) + ' — ' + esc(p.title) + '" loading="lazy" width="800" height="500"><div class="lf-photo-text"><h3>' + esc(p.caption) + '</h3><p>' + esc(p.fact) + '</p><div class="lf-word">Word to collect: <button type="button" class="vocab" data-v="' + p.vocab + '" aria-haspopup="dialog" aria-expanded="false">' + esc(v.word) + '</button></div>' + credit(p) + '</div></article>';
   }
   function spot(loc) {
@@ -77,8 +77,8 @@ var LocalFlavor = (function () {
   }
   function panel(loc, quiz) {
     if (!LOCAL_FLAVOR[loc]) return '';
-    return '<section class="local-flavor no-vocab" data-loc="' + loc + '" aria-label="Local Flavor: ' + esc(LOCATIONS[loc].name) + '"><div class="lf-header"><div><div class="lf-eyebrow">FIELD POSTCARDS · ' + String(Object.keys(LOCAL_FLAVOR).indexOf(loc) + 1).padStart(2, '0') + ' / 07</div><h2>📷 Local Flavor</h2><p>' + esc(LOCATIONS[loc].name) + ' <span>• Look. Learn. Follow the clues.</span></p></div><span class="lf-stamp" aria-hidden="true">FLORIDA<br>FIELD FILE</span></div><p class="lf-instruction">Real places, past and present. Swipe the postcards. Tap a dotted word to collect its meaning.</p><div class="lf-gallery" tabindex="0" aria-label="Photo postcards; swipe or use arrow keys">' + LOCAL_FLAVOR[loc].map(photo).join('') + '</div>' +
-      (quiz ? spot(loc) : '') + '<div class="lf-footer"><button type="button" class="btn sm ghost lf-all">🗺️ All 7 place albums</button><button type="button" class="btn sm ghost lf-credits">Photo credits</button></div></section>';
+    return '<section class="local-flavor no-vocab" data-loc="' + loc + '" aria-label="Local Flavor: ' + esc(LOCATIONS[loc].name) + '"><div class="lf-header"><div><div class="lf-eyebrow">FIELD POSTCARDS · ' + String(Object.keys(LOCAL_FLAVOR).indexOf(loc) + 1).padStart(2, '0') + ' / ' + String(Object.keys(LOCAL_FLAVOR).length).padStart(2, '0') + '</div><h2>📷 Local Flavor</h2><p>' + esc(LOCATIONS[loc].name) + ' <span>• Look. Learn. Follow the clues.</span></p></div><span class="lf-stamp" aria-hidden="true">FLORIDA<br>FIELD FILE</span></div><p class="lf-instruction">Real places, past and present. Swipe the postcards. Tap a dotted word to collect its meaning.</p><div class="lf-gallery" tabindex="0" aria-label="Photo postcards; swipe or use arrow keys">' + LOCAL_FLAVOR[loc].map(photo).join('') + '</div>' +
+      (quiz ? spot(loc) : '') + '<div class="lf-footer"><button type="button" class="btn sm ghost lf-all">' + '🗺️ All ' + Object.keys(LOCAL_FLAVOR).length + ' place albums</button><button type="button" class="btn sm ghost lf-credits">Photo credits</button></div></section>';
   }
   function wire(root) {
     if (!root) return;
@@ -102,15 +102,20 @@ var LocalFlavor = (function () {
     h.tabIndex = -1; h.focus({ preventScroll: true }); box.scrollTop = 0;
   }
   function album(loc) {
-    loc = LOCAL_FLAVOR[loc] ? loc : (LOCAL_FLAVOR[state().loc] ? state().loc : 'staug');
+    loc = LOCAL_FLAVOR[loc] ? loc : (LOCAL_FLAVOR[state().loc] ? state().loc : Object.keys(LOCAL_FLAVOR)[0]);
     var nav = '<nav class="lf-album-nav" aria-label="Choose a place">' + Object.keys(LOCAL_FLAVOR).map(function (id) { return '<button type="button" class="btn sm' + (id === loc ? ' primary' : ' ghost') + '" data-album="' + id + '" aria-pressed="' + (id === loc) + '">' + esc(LOCATIONS[id].name) + '</button>'; }).join('') + '</nav>';
     X().modal('🗺️ Florida Place Album', '<p class="small">Explore freely — browsing does not spend travel days or change your case route. Spot it points are only offered when you arrive during the case.</p>' + nav + panel(loc, false), [{ label: 'Back to the case' }], { cls: 'wide', escClose: true, noFocus: true });
     focusModalHeading();
     var root = document.getElementById('modal'); wire(root);
     root.querySelectorAll('[data-album]').forEach(function (b) { b.onclick = function () { album(b.getAttribute('data-album')); }; });
   }
+  function flavorCount() {
+    var n = 0;
+    Object.keys(LOCAL_FLAVOR).forEach(function (id) { n += (LOCAL_FLAVOR[id] || []).length; });
+    return n;
+  }
   function creditsHtml() {
-    return '<section id="lf-photo-credits" class="no-vocab"><h2>Local Flavor photo credits (22)</h2><p class="small">Real photos, not generated images. Author and license checked on Wikimedia Commons, November 7, 2026. Public-domain and CC BY / CC BY-SA photographs only. Changes: resizing, WebP conversion and thumbnails; no content changes. CC BY-SA copies remain under their original license. Credits are stored offline in photo-credits.json.</p>' + Object.keys(LOCAL_FLAVOR).map(function (id) {
+    return '<section id="lf-photo-credits" class="no-vocab"><h2>' + 'Local Flavor photo credits (' + flavorCount() + ')' + '</h2><p class="small">Real photos, not generated images. Author and license checked on Wikimedia Commons, November 7, 2026. Public-domain and CC BY / CC BY-SA photographs only. Changes: resizing, WebP conversion and thumbnails; no content changes. CC BY-SA copies remain under their original license. Credits are stored offline in photo-credits.json.</p>' + Object.keys(LOCAL_FLAVOR).map(function (id) {
       return '<h3>' + esc(LOCATIONS[id].name) + '</h3><ul class="lf-credit-list">' + LOCAL_FLAVOR[id].map(function (p) { return '<li><img src="' + esc(p.thumb) + '" alt="" loading="lazy"><div><b>' + esc(p.caption) + '</b>' + credit(p) + '</div></li>'; }).join('') + '</ul>';
     }).join('') + '</section>';
   }

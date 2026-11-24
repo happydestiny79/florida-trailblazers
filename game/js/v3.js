@@ -24,7 +24,7 @@ var V3 = (function () {
   function profiles() { return jget(K.profiles, {}); }
   function profile(name) { var p = profiles()[nameKey(name)];
     if (!p) p = { name: name, avatar: clone(AVATAR_DEFAULT), badgesEver: [], cases: 0, bestRank: null, bestScore: 0, unlocked: [] };
-    p.avatar = migrateAvatar(p.avatar, p.name || name); p.unlocked = p.unlocked || []; p.badgesEver = p.badgesEver || []; return p; }
+    p.avatar = migrateAvatar(p.avatar, p.name || name); p.unlocked = p.unlocked || []; p.badgesEver = p.badgesEver || []; if (window.CASE && CASE.migrateProfile) CASE.migrateProfile(p); return p; }
   function saveProfile(p) { var P = profiles(); P[nameKey(p.name)] = p; jset(K.profiles, P); }
   function scores() { return jget(K.scores, []); }
   function saveScores(a) { jset(K.scores, a.slice(-500)); }
@@ -128,7 +128,7 @@ var V3 = (function () {
     var opts = R.choices.map(function (c, i) { return '<button class="btn choice" data-i="' + i + '">' + esc(c.label) + '</button>'; }).join("");
     var vl = pennyLoc();
     preloadMoods("penny"); X().modal("☂️ A note from Penny Pinch!", '<div class="taunt"><div class="taunt-face">' + face("penny", "smug", "big") + '</div><div class="note-paper"><p class="note-text">' + esc(R.note) + '</p><p class="small">— P.P. (in purple ink, of course)</p></div></div>' +
-      (vl ? '<div class="map-mini taunt-map">' + ART.floridaMap({ current: st.loc, visited: st.visited, trail: st.trail, villain: vl }) + '</div>' : "") +
+      (vl ? '<div class="map-mini taunt-map">' + (window.CASE && CASE.mapHtml ? CASE.mapHtml({ current: st.loc, visited: st.visited, trail: st.trail, villain: vl }) : ART.floridaMap({ current: st.loc, visited: st.visited, trail: st.trail, villain: vl })) + '</div>' : "") +
       '<div class="choices" id="rch">' + opts + '</div><div class="feedback" id="rfb" aria-live="polite"></div>', [{ label: "Answer later ➜", cls: "ghost" }], { cls: "wide", noFocus: true });
     var m = document.getElementById("modal"); m.classList.add("taunt-modal");
     m.querySelectorAll("#rch .choice").forEach(function (b) { b.onclick = function () { if (rec.ok) return; var c = R.choices[+b.getAttribute("data-i")]; rec.tries++; if (rec.first === null) rec.first = !!c.correct;
