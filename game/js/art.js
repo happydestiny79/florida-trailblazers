@@ -1,5 +1,5 @@
 /* Florida Trailblazers v2 — maps and small UI icons.
-   Maps sit on real imagery: NASA Blue Marble (Florida map) and USGS aerial photos (St. Augustine close-up), both public domain.
+   Maps sit on real imagery: NASA Blue Marble (Florida map) and USGS aerial photos (St. Augustine close-up), both public domain. Case 2 uses a painted Tampa Bay explorer map whose coastline was traced from a public-domain USGS National Map (markers use the same real latitude and longitude).
    The Florida outline is the US Census Bureau boundary (js/geo.js). Markers use real latitude/longitude. */
 var ART = (function () {
   "use strict";
@@ -20,6 +20,11 @@ var ART = (function () {
     if (type === "capital") { var pts = []; for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; pts.push((x + rr * Math.cos(a)).toFixed(1) + "," + (y + rr * Math.sin(a)).toFixed(1)); }
       return '<polygon points="' + pts.join(" ") + '" fill="#d62828" stroke="#fff" stroke-width="2.5"/>'; }
     if (type === "fort") return '<rect x="' + (x - r * 0.8) + '" y="' + (y - r * 0.8) + '" width="' + (r * 1.6) + '" height="' + (r * 1.6) + '" fill="#8d5a2b" stroke="#fff" stroke-width="2.5"/>';
+    if (type === "preserve") return '<circle cx="' + x + '" cy="' + y + '" r="' + (r * 0.85) + '" fill="#2a9d8f" stroke="#fff" stroke-width="2.5"/><path d="M' + x + ' ' + (y - r * 0.45) + ' c' + (r * 0.35) + ' ' + (r * 0.15) + ' ' + (r * 0.35) + ' ' + (r * 0.55) + ' 0 ' + (r * 0.7) + ' c' + (-r * 0.35) + ' ' + (-r * 0.15) + ' ' + (-r * 0.35) + ' ' + (-r * 0.55) + ' 0 ' + (-r * 0.7) + 'z" fill="#e9f5e8"/>';
+    if (type === "mound") return '<path d="M' + (x - r) + ' ' + (y + r * 0.55) + ' Q' + x + ' ' + (y - r) + ' ' + (x + r) + ' ' + (y + r * 0.55) + ' Z" fill="#a67c52" stroke="#fff" stroke-width="2.5"/>';
+    if (type === "hotel") return '<path d="M' + x + ' ' + (y - r * 1.15) + ' L' + (x + r * 0.45) + ' ' + (y - r * 0.15) + ' L' + (x - r * 0.45) + ' ' + (y - r * 0.15) + ' Z" fill="#c9a227" stroke="#fff" stroke-width="2"/><rect x="' + (x - r * 0.55) + '" y="' + (y - r * 0.15) + '" width="' + (r * 1.1) + '" height="' + (r * 1.05) + '" fill="#b23a48" stroke="#fff" stroke-width="2"/>';
+    if (type === "port") return '<polygon points="' + (x) + ',' + (y - r) + ' ' + (x + r * 0.85) + ',' + y + ' ' + x + ',' + (y + r) + ' ' + (x - r * 0.85) + ',' + y + '" fill="#1d6fd6" stroke="#fff" stroke-width="2.5"/>';
+    if (type === "wildlife") return '<circle cx="' + x + '" cy="' + y + '" r="' + (r * 0.85) + '" fill="#457b9d" stroke="#fff" stroke-width="2.5"/><circle cx="' + (x - r * 0.22) + '" cy="' + (y - r * 0.1) + '" r="' + (r * 0.16) + '" fill="#fff"/><circle cx="' + (x + r * 0.22) + '" cy="' + (y - r * 0.1) + '" r="' + (r * 0.16) + '" fill="#fff"/>';
     return '<circle cx="' + x + '" cy="' + y + '" r="' + (r * 0.7) + '" fill="#1d6fd6" stroke="#fff" stroke-width="2.5"/>'; }
   function label(x, y, txt, anchor, size, cls) { return '<text class="' + (cls || "map-label") + '" x="' + x + '" y="' + y + '" text-anchor="' + (anchor || "middle") + '" font-size="' + (size || 21) + '">' + txt + '</text>'; }
   function locPt(id) { var L = LOCATIONS[id], c = P(L.lat, L.lon); return L.offset ? [c[0] + L.offset[0], c[1] + L.offset[1]] : c; }
@@ -107,5 +112,131 @@ var ART = (function () {
       '<path d="M-34 48 q0 -60 34 -60 q34 0 34 60z" fill="#4a5568"/>' + hat + carry +
       '<g transform="translate(-44,16)"><rect x="-7" y="0" width="14" height="20" rx="3" fill="' + c.ink + '"/><rect x="-4" y="-6" width="8" height="7" fill="#777"/></g></svg>'; }
 
-  return { P: P, Q: Q, PX_PER_100MI: PX_PER_100MI, PX_PER_MI_INSET: PX_PER_MI_INSET, INSET: INSET, floridaMap: floridaMap, insetMap: insetMap, suspect: suspect, symbol: symbol };
+
+  /* Tampa Bay inset (Case 2). Painted explorer-map base. Coastline traced from a
+     public-domain USGS National Map (topo + imagery) in plate carrée for this box:
+     lat 27.70..28.10 N, lon 82.8167..82.2833 W  ->  viewBox 0 0 900 675. */
+  var TB_LON0 = -82.8167, TB_LON1 = -82.2833, TB_LAT0 = 27.70, TB_LAT1 = 28.10;
+  var TB_W = 900, TB_H = 675;
+  function TB(lat, lon) {
+    return [Math.round((lon - TB_LON0) / (TB_LON1 - TB_LON0) * TB_W),
+            Math.round((TB_LAT1 - lat) / (TB_LAT1 - TB_LAT0) * TB_H)];
+  }
+  var PX_PER_MI_TB = TB_H / 0.40 / 69;
+  /* Small pin nudges (viewBox px) so downtown stops don't stack. Trails use true TB(). */
+  var TB_PIN = { weedon: [-4, 2], plant: [-16, -10], fortbrooke: [10, 18], ybor: [20, -8], portbay: [16, 16], port: [0, 10], safetyharbor: [0, -2], apollobeach: [8, 10] };
+  var TB_LABEL = {
+    weedon: ["Weedon", "end", -16, -12, 15],
+    safetyharbor: ["Safety Harbor", "end", -14, -2, 15],
+    plant: ["Plant Hotel", "end", -14, -8, 14],
+    fortbrooke: ["Fort Brooke", "start", 12, 16, 14],
+    ybor: ["Ybor", "start", 12, -6, 15],
+    port: ["Port Tampa", "middle", 0, 22, 14],
+    portbay: ["Harbor", "start", 12, 14, 14],
+    apollobeach: ["Apollo Beach", "start", 12, 16, 14]
+  };
+  function locPtTB(id) {
+    var L = LOCATIONS[id], c = TB(L.lat, L.lon), o = TB_PIN[id];
+    return o ? [c[0] + o[0], c[1] + o[1]] : c;
+  }
+  function tbPin(type, x, y) {
+    var fill = { fort: "#8d5a2b", preserve: "#2a9d8f", mound: "#a67c52", hotel: "#b23a48", port: "#1d6fd6", wildlife: "#457b9d", city: "#6b3fa0" }[type] || "#3d5a4c";
+    return '<g class="map-pin" transform="translate(' + x + ',' + y + ')">' +
+      '<ellipse cx="0" cy="5" rx="7" ry="2.6" fill="rgba(40,20,8,.28)"/>' +
+      '<path d="M0 -15 C6.2 -15 10 -10.5 10 -5.5 C10 1.5 0 16 0 16 C0 16 -10 1.5 -10 -5.5 C-10 -10.5 -6.2 -15 0 -15Z" fill="' + fill + '" stroke="#f6e6c0" stroke-width="1.7"/>' +
+      '<circle cx="0" cy="-6.2" r="3.2" fill="#f6e6c0"/>' +
+    '</g>';
+  }
+  function tampaBayMap(opts) { opts = opts || {};
+    var file = (typeof IMAGES !== "undefined" && IMAGES.map_tampa && IMAGES.map_tampa.file) ? IMAGES.map_tampa.file : "map_tampa.webp";
+    var s = '<svg class="map-svg tampa-bay" viewBox="0 0 ' + TB_W + ' ' + TB_H + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Painted map of Tampa Bay">' +
+      '<image href="assets/img/' + file + '" x="0" y="0" width="' + TB_W + '" height="' + TB_H + '" preserveAspectRatio="none"/>';
+    s += label(450, 26, "Map of Tampa Bay", "middle", 20, "map-title");
+    var waters = [
+      [27.93, -82.645, "Old Tampa Bay", 15],
+      [27.855, -82.43, "Hillsborough Bay", 15],
+      [27.775, -82.77, "Gulf of Mexico", 15],
+      [27.998, -82.438, "Hillsborough R.", 12]
+    ];
+    var wi, wp;
+    for (wi = 0; wi < waters.length; wi++) {
+      wp = TB(waters[wi][0], waters[wi][1]);
+      s += '<text class="map-water" x="' + wp[0] + '" y="' + wp[1] + '" text-anchor="middle" font-size="' + waters[wi][3] + '">' + waters[wi][2] + '</text>';
+    }
+    var trail = opts.trail || [];
+    for (var i = 1; i < trail.length; i++) {
+      if (!LOCATIONS[trail[i - 1]] || !LOCATIONS[trail[i]]) continue;
+      var a = TB(LOCATIONS[trail[i - 1]].lat, LOCATIONS[trail[i - 1]].lon), b = TB(LOCATIONS[trail[i]].lat, LOCATIONS[trail[i]].lon), last = i === trail.length - 1 && opts.animate;
+      s += '<line class="trail' + (last ? " draw" : "") + '" x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '"/>';
+    }
+    if (opts.route && LOCATIONS[opts.route[0]] && LOCATIONS[opts.route[1]]) {
+      var r0 = TB(LOCATIONS[opts.route[0]].lat, LOCATIONS[opts.route[0]].lon), r1 = TB(LOCATIONS[opts.route[1]].lat, LOCATIONS[opts.route[1]].lon);
+      s += '<line class="route" x1="' + r0[0] + '" y1="' + r0[1] + '" x2="' + r1[0] + '" y2="' + r1[1] + '"/>';
+    }
+    Object.keys(LOCATIONS).forEach(function (id) {
+      var L = LOCATIONS[id]; if (!L || L.lat == null) return;
+      if ((id === "portbay") && opts.current !== id && !(opts.visited && opts.visited.indexOf(id) >= 0) && !(opts.route && (opts.route[0] === id || opts.route[1] === id))) return;
+      var c = TB(L.lat, L.lon), m = locPtTB(id), mx = m[0], my = m[1];
+      if (mx !== c[0] || my !== c[1]) s += '<line class="pin-leader" x1="' + c[0] + '" y1="' + c[1] + '" x2="' + mx + '" y2="' + my + '" stroke="#5c3d1e" stroke-width="1.6" stroke-dasharray="3 3"/>' +
+        '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="2.2" fill="#5c3d1e"/>';
+      var vis = opts.visited && opts.visited.indexOf(id) >= 0;
+      var cls = "marker" + (opts.current === id ? " current" : "") + (opts.clickable ? " clickable" : "") + (vis ? " visited" : "");
+      var lb = TB_LABEL[id] || [L.label, "start", 14, 6, 15];
+      s += '<g class="' + cls + '" data-loc="' + id + '" tabindex="' + (opts.clickable ? 0 : -1) + '" role="' + (opts.clickable ? "button" : "img") + '" aria-label="' + L.label + (vis ? " (visited)" : "") + '">' +
+        '<circle cx="' + mx + '" cy="' + my + '" r="22" fill="transparent"/>' + tbPin(L.symbol, mx, my) +
+        (vis ? '<circle cx="' + (mx + 10) + '" cy="' + (my - 16) + '" r="7" fill="#2a9d8f" stroke="#fff" stroke-width="1.6"/><path d="M' + (mx + 7) + ' ' + (my - 16) + ' l2.4 2.4 l4.8 -5" stroke="#fff" stroke-width="2" fill="none"/>' : "") +
+        (opts.current === id ? '<circle cx="' + mx + '" cy="' + my + '" r="18" fill="none" stroke="#c9a227" stroke-width="3" class="pulse"/>' : "") +
+        label(mx + lb[2], my + lb[3], lb[0], lb[1], lb[4]) + '</g>';
+    });
+    if (opts.villain && !opts.clickable && LOCATIONS[opts.villain]) {
+      var vp = locPtTB(opts.villain), cur = locPtTB(opts.current || "weedon");
+      s += '<g class="villain-mark" aria-label="Penny Pinch escaped toward ' + LOCATIONS[opts.villain].name + '"><line x1="' + cur[0] + '" y1="' + cur[1] + '" x2="' + vp[0] + '" y2="' + vp[1] + '" stroke="#d62828" stroke-width="4" stroke-dasharray="3 9" stroke-linecap="round"/>' +
+        '<circle cx="' + vp[0] + '" cy="' + (vp[1] - 44) + '" r="20" fill="#7b3fa0" stroke="#fff" stroke-width="3"/><text x="' + vp[0] + '" y="' + (vp[1] - 37) + '" font-size="20" text-anchor="middle">☂️</text>' +
+        '<text class="map-label" x="' + vp[0] + '" y="' + (vp[1] - 72) + '" text-anchor="middle" font-size="16" fill="#7b3fa0">Penny escaped here!</text></g>';
+    }
+    s += compass(820, 118, 0.72);
+    var sx = 28, sy = 628, w = PX_PER_MI_TB * 10;
+    s += '<g class="scalebar" aria-hidden="true"><rect x="' + (sx - 12) + '" y="' + (sy - 32) + '" width="' + (w + 56) + '" height="54" rx="9" fill="rgba(247,236,210,.9)" stroke="#5c3d1e" stroke-width="1.2"/>' +
+      '<rect x="' + sx + '" y="' + sy + '" width="' + w + '" height="8" fill="#3b2a18"/>' +
+      '<g font-size="12" font-weight="700" fill="#3b2a18" text-anchor="middle"><text x="' + sx + '" y="' + (sy - 8) + '">0</text><text x="' + (sx + w) + '" y="' + (sy - 8) + '">10 miles</text></g></g>';
+    s += '<g class="map-key-btn" role="button" tabindex="0" aria-label="Show map key" transform="translate(820, 210)">' +
+      '<rect x="-34" y="-14" width="68" height="26" rx="8" fill="rgba(247,236,210,.94)" stroke="#5c3d1e" stroke-width="1.6"/>' +
+      '<text x="0" y="5" text-anchor="middle" font-size="13" font-weight="800" fill="#5c3d1e">Key ▾</text></g>';
+    s += '<g class="map-legend-pop" aria-hidden="true" transform="translate(668, 226)">' +
+      '<rect width="216" height="168" rx="10" fill="rgba(247,236,210,.96)" stroke="#5c3d1e" stroke-width="1.6"/>' +
+      '<text x="108" y="22" text-anchor="middle" font-size="13" font-weight="800" fill="#3b2a18">MAP KEY</text>' +
+      tbPin("fort", 22, 48) + '<text x="40" y="46" font-size="13" fill="#3b2a18">Historic fort</text>' +
+      tbPin("preserve", 22, 74) + '<text x="40" y="72" font-size="13" fill="#3b2a18">Preserve / park</text>' +
+      tbPin("mound", 22, 100) + '<text x="40" y="98" font-size="13" fill="#3b2a18">Historic mound</text>' +
+      tbPin("hotel", 22, 126) + '<text x="40" y="124" font-size="13" fill="#3b2a18">Historic hotel</text>' +
+      tbPin("port", 22, 152) + '<text x="40" y="150" font-size="13" fill="#3b2a18">Port</text></g>';
+    s += '<text class="map-credit" x="888" y="662" text-anchor="end" font-size="10">Coastline from USGS National Map (public domain).</text>';
+    return s + '</svg>';
+  }
+
+  function wireTampaBayKey() {
+    if (wireTampaBayKey.done) return;
+    wireTampaBayKey.done = true;
+    function toggle(ev) {
+      var btn = ev.target && ev.target.closest && ev.target.closest(".map-key-btn");
+      if (!btn) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      var svg = btn.closest("svg"), pop = svg && svg.querySelector(".map-legend-pop");
+      if (pop) {
+        pop.classList.toggle("is-open");
+        pop.setAttribute("aria-hidden", pop.classList.contains("is-open") ? "false" : "true");
+      }
+    }
+    document.addEventListener("click", toggle, true);
+    document.addEventListener("keydown", function (ev) {
+      if (ev.key !== "Enter" && ev.key !== " ") return;
+      toggle(ev);
+    });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", wireTampaBayKey);
+  else wireTampaBayKey();
+
+  return { P: P, Q: Q, TB: TB, PX_PER_100MI: PX_PER_100MI, PX_PER_MI_INSET: PX_PER_MI_INSET, PX_PER_MI_TB: PX_PER_MI_TB, INSET: INSET, floridaMap: floridaMap, tampaBayMap: tampaBayMap, insetMap: insetMap, suspect: suspect, symbol: symbol };
+
 })();

@@ -54,7 +54,28 @@ window.JOURNAL = (function () {
 
   function X() { return window.FTBX; }
   function esc(s) { return X() ? X().esc(s) : String(s).replace(/[&<>"]/g, function (c) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" })[c]; }); }
-  function cardById(id) { for (var i = 0; i < CARDS.length; i++) if (CARDS[i].id === id) return CARDS[i]; return null; }
+  function packCards(caseId) {
+    caseId = caseId || (window.CASE && CASE.id()) || "case1";
+    var pack = window.CASE && CASE.journalCards && CASE.journalCards(caseId);
+    return pack || CARDS;
+  }
+  function packRegions(caseId) {
+    caseId = caseId || (window.CASE && CASE.id()) || "case1";
+    var pack = window.CASE && CASE.journalRegions && CASE.journalRegions(caseId);
+    return pack || REGIONS;
+  }
+  function packTotal(caseId) {
+    return packCards(caseId).length;
+  }
+  function cardById(id, caseId) {
+    var list = packCards(caseId);
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+    if (!caseId && window.CASE) {
+      var ids = CASE.ids(), j, found;
+      for (j = 0; j < ids.length; j++) { found = cardById(id, ids[j]); if (found) return found; }
+    }
+    return null;
+  }
   function src(c, thumb) { return IMG + (thumb ? c.thumb : c.img); }
 
   function empty() { return { cards: [], minisOffered: {}, minisDone: {} }; }
@@ -67,10 +88,34 @@ window.JOURNAL = (function () {
     if (!st.journal.minisDone) st.journal.minisDone = {};
     return st;
   }
-  function collected() { var st = ensure(); return st ? st.journal.cards.slice() : []; }
-  function has(id) { return collected().indexOf(id) >= 0; }
-  function count() { return collected().length; }
-  function countHtml() { return count() + " / " + TOTAL; }
+  function collected(caseId) {
+    caseId = caseId || (window.CASE && CASE.id()) || "case1";
+    var cur = (window.CASE && CASE.id()) || "case1";
+    var st = ensure();
+    if (st && (st.caseId || cur) === caseId && st.journal && Array.isArray(st.journal.cards)) return st.journal.cards.slice();
+    if (window.CASE && CASE.readSave) {
+      var sv = CASE.readSave(caseId);
+      if (sv && sv.journal && Array.isArray(sv.journal.cards)) return sv.journal.cards.slice();
+    }
+    if (window.V3) {
+      var seen = {}, out = [], names = [];
+      try { if (window.FTB && FTB.state && FTB.state() && V3.players) names = V3.players() || []; } catch (e) { names = []; }
+      if ((!names || !names.length) && V3.profiles) {
+        var P = V3.profiles();
+        names = Object.keys(P).map(function (k) { return (P[k] && P[k].name) || k; });
+      }
+      (names || []).forEach(function (n) {
+        if (!n || n === "Guest") return;
+        var p = V3.profile(n), jnl = (window.CASE && CASE.profileJournal) ? CASE.profileJournal(p, caseId) : (p.journal || { cards: [] });
+        (jnl.cards || []).forEach(function (id) { if (!seen[id]) { seen[id] = 1; out.push(id); } });
+      });
+      if (out.length) return out;
+    }
+    return [];
+  }
+  function has(id, caseId) { return collected(caseId).indexOf(id) >= 0; }
+  function count(caseId) { return collected(caseId).length; }
+  function countHtml(caseId) { return count(caseId) + " / " + packTotal(caseId); }
 
   function persistCard(id) {
     var st = ensure(); if (!st) return false;
@@ -81,9 +126,13 @@ window.JOURNAL = (function () {
       V3.players().forEach(function (n) {
         if (!n || n === "Guest") return;
         var p = V3.profile(n);
-        p.journal = p.journal || { cards: [] };
-        if (!Array.isArray(p.journal.cards)) p.journal.cards = [];
-        if (p.journal.cards.indexOf(id) < 0) p.journal.cards.push(id);
+        if (window.CASE && CASE.migrateProfile) CASE.migrateProfile(p);
+        var cid = (window.CASE && CASE.id()) || "case1";
+        p.journals = p.journals || {};
+        p.journals[cid] = p.journals[cid] || { cards: [] };
+        if (!Array.isArray(p.journals[cid].cards)) p.journals[cid].cards = [];
+        if (p.journals[cid].cards.indexOf(id) < 0) p.journals[cid].cards.push(id);
+        if (cid === "case1") p.journal = p.journals.case1;
         V3.saveProfile(p);
       });
     }
@@ -93,7 +142,7 @@ window.JOURNAL = (function () {
   /* Award one or more cards. silent: skip the reveal modal (tests / already showing). */
   function refreshHudCount() {
     var el = document.querySelector("#journalbtn .count");
-    if (el) el.textContent = count() + "/" + TOTAL;
+    if (el) el.textContent = count() + "/" + packTotal();
   }
 
   function award(ids, opts) {
@@ -108,7 +157,7 @@ window.JOURNAL = (function () {
   }
 
   function cardsForScene(sid) {
-    return CARDS.filter(function (c) { return (c.awardAt || []).indexOf(sid) >= 0; });
+    return packCards().filter(function (c) { return (c.awardAt || []).indexOf(sid) >= 0; });
   }
 
   function showReveal(ids, onDone) {
@@ -154,19 +203,31 @@ window.JOURNAL = (function () {
     }
   }
 
-  function gridHtml() {
-    var n = count();
+  var viewCase = "case1";
+  function gridHtml(caseId) {
+    caseId = caseId || viewCase || (window.CASE && CASE.id()) || "case1";
+    viewCase = caseId;
+    var n = count(caseId), tot = packTotal(caseId);
+    var tabs = "";
+    if (window.CASE && CASE.ids) {
+      tabs = '<div class="j-tabs" role="tablist" aria-label="Choose a case">' + CASE.ids().map(function (id) {
+        var m = CASE.meta(id);
+        var on = id === caseId;
+        return '<button type="button" class="j-tab' + (on ? " is-on" : "") + '" role="tab" aria-selected="' + on + '" data-journal-case="' + id + '">Case ' + (id === "case2" ? "2" : "1") + ': ' + esc(m.title) + "</button>";
+      }).join("") + "</div>";
+    }
     var html = '<div class="j-wrap" id="journal-panel">' +
       '<div class="j-head"><button type="button" class="btn" id="j-back">← Back</button>' +
       "<h1>📒 Florida Field Journal</h1>" +
-      '<span class="j-count" id="j-count">' + n + " / " + TOTAL + " collected</span></div>" +
+      '<span class="j-count" id="j-count">' + n + " / " + tot + " collected</span></div>" +
+      tabs +
       '<p class="j-lead">Collect painted cards of real Florida places, wildlife, food, and history as you travel. Locked cards stay in silhouette until you find them.</p>';
-    REGIONS.forEach(function (r) {
-      var list = CARDS.filter(function (c) { return c.regionId === r.id; });
+    packRegions(caseId).forEach(function (r) {
+      var list = packCards(caseId).filter(function (c) { return c.regionId === r.id; });
       if (!list.length) return;
       html += '<section class="j-region" data-region="' + r.id + '"><h2>' + esc(r.name) + "</h2><div class=\"j-grid\">";
       list.forEach(function (c) {
-        var on = has(c.id);
+        var on = has(c.id, caseId);
         html += '<button type="button" class="j-card' + (on ? "" : " is-locked") + '" data-card="' + c.id + '" aria-label="' +
           (on ? esc(c.name) : "Locked card in " + esc(r.name)) + '">' +
           (on ? '<img src="' + src(c, true) + '" alt="">' : '<img class="j-sil" src="' + src(c, true) + '" alt="">') +
@@ -189,6 +250,7 @@ window.JOURNAL = (function () {
   function open(opts) {
     opts = opts || {};
     ensure();
+    viewCase = opts.caseId || (window.CASE && CASE.id()) || viewCase || "case1";
     openedFrom = opts.from || (document.querySelector(".title-screen") ? "title" : "game");
     var existing = document.getElementById("journal-screen");
     if (existing) existing.remove();
@@ -203,9 +265,12 @@ window.JOURNAL = (function () {
     root.querySelectorAll(".j-card").forEach(function (btn) {
       btn.onclick = function () {
         var id = btn.getAttribute("data-card");
-        if (!has(id)) return;
+        if (!has(id, viewCase)) return;
         openCard(id, function () { /* stay on journal */ });
       };
+    });
+    root.querySelectorAll("[data-journal-case]").forEach(function (btn) {
+      btn.onclick = function () { open({ from: openedFrom, caseId: btn.getAttribute("data-journal-case") }); };
     });
     if (window.READALOUD && READALOUD.afterScreen) READALOUD.afterScreen(root);
     window.scrollTo(0, 0);
@@ -273,7 +338,7 @@ window.JOURNAL = (function () {
   function tryFlavorAwards(root) {
     root = root || document;
     if (!root.querySelectorAll) return;
-    CARDS.forEach(function (c) {
+    packCards().forEach(function (c) {
       if (!c.flavorPhoto || has(c.id)) return;
       var nodes = root.querySelectorAll('.lf-postcard[data-photo="' + c.flavorPhoto + '"]');
       if (!nodes.length) return;
@@ -291,7 +356,7 @@ window.JOURNAL = (function () {
           showInlineReveal([c.id], null, {
             after: gal,
             kicker: "📒 Local Flavor find!",
-            note: "You spotted this on a St. Augustine food postcard."
+            note: "You spotted this on a Local Flavor postcard."
           });
         });
       };
@@ -319,7 +384,7 @@ window.JOURNAL = (function () {
   function afterFrame(sc) {
     var st = ensure(); if (!st || !sc) return;
     tryFlavorAwards(document);
-    var due = CARDS.filter(function (c) { return (c.awardAt || []).indexOf(st.scene) >= 0 && !has(c.id); });
+    var due = packCards().filter(function (c) { return (c.awardAt || []).indexOf(st.scene) >= 0 && !has(c.id); });
     function ready() { if (window.MINI && MINI.onSceneReady) MINI.onSceneReady(st.scene); }
     if (!due.length) { ready(); return; }
     /* Persist always. Use an inline reveal (not #modal) so we never steal Penny's riddle/taunt or block the page. */
@@ -340,15 +405,18 @@ window.JOURNAL = (function () {
         var P = V3.profiles();
         Object.keys(P).forEach(function (k) {
           var p = P[k];
-          if (p && p.name && p.name !== "Guest" && !seen[p.name] && p.journal && p.journal.cards && p.journal.cards.length) roster.push(p.name);
+          var hasJ = p && ((p.journal && p.journal.cards && p.journal.cards.length) || (p.journals && ((p.journals.case1 && p.journals.case1.cards && p.journals.case1.cards.length) || (p.journals.case2 && p.journals.case2.cards && p.journals.case2.cards.length))));
+          if (p && p.name && p.name !== "Guest" && !seen[p.name] && hasJ) roster.push(p.name);
         });
       }
       if (!roster.length) rows = "<p class='small'>No student journal progress on this device yet.</p>";
       else {
-        rows = "<table><thead><tr><th>Student</th><th>Field Journal</th></tr></thead><tbody>" + roster.map(function (n) {
+        rows = "<table><thead><tr><th>Student</th><th>Case 1 journal</th><th>Case 2 journal</th></tr></thead><tbody>" + roster.map(function (n) {
           var p = V3.profile(n);
-          var k = (p && p.journal && p.journal.cards) ? p.journal.cards.length : 0;
-          return "<tr><td>" + esc(n) + "</td><td>" + k + " / " + TOTAL + " collected</td></tr>";
+          if (window.CASE && CASE.migrateProfile) CASE.migrateProfile(p);
+          var c1 = (p && p.journals && p.journals.case1 && p.journals.case1.cards) ? p.journals.case1.cards.length : ((p && p.journal && p.journal.cards) ? p.journal.cards.length : 0);
+          var c2 = (p && p.journals && p.journals.case2 && p.journals.case2.cards) ? p.journals.case2.cards.length : 0;
+          return "<tr><td>" + esc(n) + "</td><td>" + c1 + " / " + packTotal("case1") + "</td><td>" + c2 + " / " + packTotal("case2") + "</td></tr>";
         }).join("") + "</tbody></table>";
       }
     } else {
@@ -400,6 +468,7 @@ window.JOURNAL = (function () {
 
   return {
     CARDS: CARDS, REGIONS: REGIONS, TOTAL: TOTAL,
+    packCards: packCards, packRegions: packRegions, packTotal: packTotal,
     ensure: ensure, collected: collected, has: has, count: count, countHtml: countHtml,
     award: award, persistCard: persistCard, cardById: cardById, cardsForScene: cardsForScene,
     open: open, close: closeScreen, openCard: openCard, showReveal: showReveal, showInlineReveal: showInlineReveal,

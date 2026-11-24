@@ -114,14 +114,78 @@ var READALOUD = (function () {
     } catch (e) {}
   }
 
+
+  var ICON_SPEAK = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path fill="currentColor" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>';
+  var ICON_STOP = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><rect fill="currentColor" x="6" y="6" width="12" height="12" rx="2"/></svg>';
+  var tapBound = false;
+
+  function fabEl() { return document.getElementById("ra-fab"); }
+
+  function syncFab() {
+    var b = fabEl();
+    if (!b) return;
+    var on = shouldShowFab();
+    b.hidden = !on;
+    document.body.classList.toggle("ra-fab-on", on);
+    document.body.classList.toggle("ra-on", !!(hasSynth() && settings().auto));
+    var playing = !!(job && on);
+    b.classList.toggle("is-playing", playing);
+    b.setAttribute("aria-pressed", playing ? "true" : "false");
+    b.setAttribute("aria-label", playing ? "Stop reading" : "Read to me");
+    b.title = playing ? "Stop reading" : "Read to me";
+    var icon = b.querySelector(".ra-fab-icon");
+    if (icon) icon.innerHTML = playing ? ICON_STOP : ICON_SPEAK;
+  }
+
+  function shouldShowFab() {
+    if (!hasSynth() || !settings().auto) return false;
+    if (document.querySelector(".title-screen")) return false;
+    if (document.querySelector(".teacher") && !document.querySelector("main .panel")) return false;
+    return true;
+  }
+
+  function ensureFab() {
+    if (!hasSynth()) return null;
+    var b = fabEl();
+    if (b) { syncFab(); return b; }
+    b = document.createElement("button");
+    b.type = "button";
+    b.id = "ra-fab";
+    b.className = "ra-fab";
+    b.hidden = true;
+    b.innerHTML = '<span class="ra-fab-icon" aria-hidden="true">' + ICON_SPEAK + '</span>';
+    b.setAttribute("aria-label", "Read to me");
+    b.title = "Read to me";
+    b.setAttribute("aria-pressed", "false");
+    b.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (job) { cancel(); return; }
+      speakScreen();
+    });
+    document.body.appendChild(b);
+    bindTap();
+    syncFab();
+    return b;
+  }
+
+  function bindTap() {
+    if (tapBound) return;
+    tapBound = true;
+    document.addEventListener("click", function (e) {
+      if (!hasSynth() || !settings().auto) return;
+      var t = e.target && e.target.closest ? e.target : null;
+      if (!t || !t.closest) return;
+      if (t.closest("#ra-fab, #vpop, .vocab, .hud, .modal-btns, button, a, input, select, textarea, .choice, .opt, .iq, .ev-sent, .lf-spot-choice, .spot, .j-card, .o-btns, .lf-gallery")) return;
+      var el = t.closest(".ra-tap");
+      if (!el) return;
+      speakElement(el);
+    });
+  }
+
   function clearHighlight() {
     document.querySelectorAll(".ra-on").forEach(function (n) { n.classList.remove("ra-on"); });
     document.querySelectorAll(".ra-playing").forEach(function (n) { n.classList.remove("ra-playing"); });
-    document.querySelectorAll(".ra-btn[aria-pressed='true']").forEach(function (b) {
-      b.setAttribute("aria-pressed", "false");
-      b.setAttribute("aria-label", b.getAttribute("data-ra-label") || "Read aloud");
-      b.textContent = "🔊";
-    });
   }
   function unwrap(root) {
     if (!root) return;
@@ -144,19 +208,20 @@ var READALOUD = (function () {
     var s = synth();
     if (s) { try { s.cancel(); } catch (e) {} }
     if (window.SFX && SFX.unduck) SFX.unduck();
+    syncFab();
   }
 
   function textOf(el) {
     if (!el) return "";
     var clone = el.cloneNode(true);
-    clone.querySelectorAll(".ra-btn, .sr-only, .grip, .o-btns, .ev-n, .box, script, style, .p-kind").forEach(function (n) { n.remove(); });
+    clone.querySelectorAll(".ra-btn, .sr-only, .grip, .o-btns, .ev-n, .box, script, style, .p-kind, .ra-fab").forEach(function (n) { n.remove(); });
     return (clone.innerText || clone.textContent || "").replace(/\s+/g, " ").trim();
   }
 
   function skipNode(n) {
     if (n.nodeType !== 1) return false;
     if (/^(SCRIPT|STYLE|SVG|TEXTAREA|INPUT|SELECT)$/i.test(n.nodeName)) return true;
-    return n.classList && (n.classList.contains("ra-btn") || n.classList.contains("sr-only") || n.classList.contains("grip") || n.classList.contains("o-btns") || n.classList.contains("ev-n") || n.classList.contains("box") || n.classList.contains("p-kind"));
+    return n.classList && (n.classList.contains("ra-btn") || n.classList.contains("sr-only") || n.classList.contains("grip") || n.classList.contains("o-btns") || n.classList.contains("ev-n") || n.classList.contains("box") || n.classList.contains("p-kind") || n.classList.contains("ra-fab"));
   }
   function wrapWords(root) {
     unwrap(root);
@@ -195,16 +260,11 @@ var READALOUD = (function () {
     u.lang = "en-US";
     try { if (chosenVoice) u.voice = chosenVoice; } catch (e) {}
     var roots = opts.roots || (opts.el ? [opts.el] : []);
-    var btn = opts.btn || null;
+    var btn = opts.btn || fabEl();
     spokenLog.push(text);
-    job = { utt: u, btn: btn, roots: roots, words: opts.words || [], usedBoundary: false, timer: null, text: text, map: null };
-    if (btn) {
-      btn.setAttribute("aria-pressed", "true");
-      if (!btn.getAttribute("data-ra-label")) btn.setAttribute("data-ra-label", btn.getAttribute("aria-label") || "Read aloud");
-      btn.setAttribute("aria-label", "Stop reading");
-      btn.textContent = "⏹️";
-    }
-    roots.forEach(function (r) { r.classList.add("ra-playing"); });
+    job = { utt: u, btn: btn, roots: roots, words: opts.words || [], usedBoundary: false, timer: null, text: text, map: null, kind: opts.kind || "item" };
+    roots.forEach(function (r) { if (r && r.classList) r.classList.add("ra-playing"); });
+    syncFab();
 
     if (window.SFX && SFX.duck) SFX.duck();
     function finish() {
@@ -214,6 +274,7 @@ var READALOUD = (function () {
       clearHighlight();
       job = null;
       if (window.SFX && SFX.unduck) SFX.unduck();
+      syncFab();
       if (opts.onend) opts.onend();
     }
     u.onend = finish;
@@ -261,71 +322,33 @@ var READALOUD = (function () {
 
   function speakElement(el, btn) {
     if (!hasSynth() || !el) return;
-    if (job && job.btn && btn && job.btn === btn) { cancel(); return; }
+    if (job && job.roots && job.roots.length === 1 && job.roots[0] === el) { cancel(); return; }
     cancel();
     var words = wrapWords(el);
-    speakNow(textOf(el), { el: el, roots: [el], btn: btn, words: words });
+    speakNow(textOf(el), { el: el, roots: [el], btn: btn || fabEl(), words: words, kind: "item" });
   }
   function speakText(text, btn, onend) {
     if (!hasSynth()) return;
     if (job && btn && job.btn === btn) { cancel(); return; }
     cancel();
-    speakNow(String(text || ""), { btn: btn, onend: onend });
+    speakNow(String(text || ""), { btn: btn || fabEl(), onend: onend, kind: "text" });
   }
-  function speakQueue(items) {
+  function speakQueue(items, kind) {
     var i = 0;
     function next() {
-      if (i >= items.length) return;
+      if (i >= items.length) { syncFab(); return; }
       var it = items[i++];
-      if (!it || !it.el || !document.body.contains(it.el)) { next(); return; }
-      var words = wrapWords(it.el);
-      var text = textOf(it.el);
+      if (!it || (it.el && !document.body.contains(it.el))) { next(); return; }
+      var el = it.el;
+      var text = it.text || (el ? textOf(el) : "");
       if (!text) { next(); return; }
-      speakNow(text, { el: it.el, roots: [it.el], btn: it.btn || (it.el.querySelector && it.el.querySelector(".ra-btn")), words: words, onend: next });
+      var words = el ? wrapWords(el) : [];
+      speakNow(text, { el: el, roots: el ? [el] : [], btn: fabEl(), words: words, onend: next, kind: kind || "queue" });
     }
     cancel();
     next();
   }
 
-  function makeBtn(label) {
-    var b = document.createElement("button");
-    b.type = "button";
-    b.className = "ra-btn";
-    b.setAttribute("aria-label", label);
-    b.setAttribute("aria-pressed", "false");
-    b.setAttribute("data-ra-label", label);
-    b.title = "Read aloud";
-    b.textContent = "🔊";
-    return b;
-  }
-  function wrapRow(el, btn) {
-    if (el.parentNode && el.parentNode.classList && el.parentNode.classList.contains("ra-row")) {
-      if (!el.parentNode.querySelector(".ra-btn")) el.parentNode.appendChild(btn);
-      return;
-    }
-    var row = document.createElement("div");
-    row.className = "ra-row";
-    el.parentNode.insertBefore(row, el);
-    row.appendChild(el);
-    row.appendChild(btn);
-  }
-  function attachBlock(el, label) {
-    if (!el || el.getAttribute("data-ra") === "1") return el && el.querySelector ? el.querySelector(".ra-btn") : null;
-    el.setAttribute("data-ra", "1");
-    el.classList.add("ra-block");
-    var btn = makeBtn(label);
-    el.insertBefore(btn, el.firstChild);
-    btn.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); speakElement(el, btn); });
-    return btn;
-  }
-  function attachRow(el, label) {
-    if (!el || el.getAttribute("data-ra") === "1") return el && el.parentNode && el.parentNode.querySelector ? el.parentNode.querySelector(".ra-btn") : null;
-    el.setAttribute("data-ra", "1");
-    var btn = makeBtn(label);
-    wrapRow(el, btn);
-    btn.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); speakElement(el, btn); });
-    return btn;
-  }
   function isAnswerChoice(el) {
     if (!el) return false;
     if (el.id === "next" || el.id === "check" || el.id === "reveal" || el.id === "buy" || el.id === "hubnext" || el.id === "ask") return false;
@@ -333,57 +356,119 @@ var READALOUD = (function () {
     return true;
   }
 
+  function markTappable(el) {
+    if (!el) return null;
+    el.setAttribute("data-ra", "1");
+    el.classList.add("ra-tap");
+    return el;
+  }
+  function attachBlock(el, label) {
+    /* Kept as a hook for journal/calling-card callers; no per-item speaker buttons. */
+    return markTappable(el);
+  }
+
   function enhance(root) {
     if (!hasSynth() || !root || !root.querySelectorAll) return;
-    root.querySelectorAll(".fox-note").forEach(function (el) { attachBlock(el, "Read this calling card aloud"); });
-    root.querySelectorAll(".fox-intro-text, .fox-capture-text").forEach(function (el) { attachBlock(el, "Read this aloud"); });
-    root.querySelectorAll(".passage").forEach(function (el) { attachBlock(el, "Read this passage aloud"); });
-    root.querySelectorAll(".prompt").forEach(function (el) { attachBlock(el, "Read this question aloud"); });
-    root.querySelectorAll("section.panel > p, .modal-body > p, .iv-a, #partner-bubble, .partner-bubble, .lf-instruction, .lf-clue, .lf-photo-text, .lf-spot > p").forEach(function (el) {
+    root.querySelectorAll(".fox-note, .fox-intro-text, .fox-capture-text, .passage, .prompt").forEach(function (el) { markTappable(el); });
+    root.querySelectorAll("section.panel > p, .modal-body > p, .iv-a, #partner-bubble, .partner-bubble, .lf-instruction, .lf-clue, .lf-photo-text, .lf-spot > p, .j-facts, .j-detail").forEach(function (el) {
       if (el.classList.contains("small") || el.classList.contains("hint") || el.classList.contains("tip") || el.classList.contains("src")) return;
-      if (el.closest && el.closest(".shop, .budget, .win-stats, .t-class, .privacy, .credits")) return;
-      attachBlock(el, "Read this aloud");
-    });
-    root.querySelectorAll("#ch .choice, #rch .choice, #qw .opt, #ivq .iq, .ev-sent, .lf-spot-choice").forEach(function (el) {
-      if (!isAnswerChoice(el)) return;
-      var kind = el.classList.contains("iq") ? "Read this interview question aloud" : (el.classList.contains("ev-sent") ? "Read this sentence aloud" : (el.classList.contains("lf-spot-choice") ? "Read this photo choice aloud" : "Read this answer aloud"));
-      attachRow(el, kind);
+      if (el.closest && el.closest(".shop, .budget, .win-stats, .t-class, .privacy, .credits, .ra-settings")) return;
+      markTappable(el);
     });
   }
 
   function autoBlocks(root) {
     var out = [], seen = [];
-    function add(el) {
+    function add(el, text) {
       if (!el || !document.body.contains(el)) return;
       if (seen.indexOf(el) >= 0) return;
       seen.push(el);
-      out.push({ el: el, btn: el.querySelector && el.querySelector(".ra-btn") });
+      var item = { el: el };
+      if (text) item.text = text;
+      out.push(item);
     }
     if (!root) return out;
-    var lf = root.querySelector && root.querySelector(".local-flavor");
-    if (lf) {
-      add(lf.querySelector(".lf-instruction"));
-      var card = lf.querySelector(".lf-photo-text");
-      if (card) add(card);
-      var spot = lf.querySelector(".lf-spot > p");
-      if (spot) add(spot);
-    }
     if (root.querySelector) {
+      var lf = root.querySelector(".local-flavor");
+      if (lf) {
+        add(lf.querySelector(".lf-instruction"));
+        var card = lf.querySelector(".lf-photo-text");
+        if (card) add(card);
+        var spot = lf.querySelector(".lf-spot > p");
+        if (spot) add(spot);
+      }
       var clue = root.querySelector(".lf-clue");
       if (clue) add(clue);
       root.querySelectorAll("section.panel > p").forEach(function (p) {
         if (p.classList.contains("small") || p.classList.contains("hint") || p.classList.contains("tip")) return;
         add(p);
       });
+      add(root.querySelector(".fox-note"));
+      add(root.querySelector(".fox-intro-text"));
       add(root.querySelector(".passage"));
       add(root.querySelector(".prompt"));
     }
     var modal = (root.id === "modal") ? root : document.getElementById("modal");
     if (modal && (root === modal || (root.contains && root.contains(modal)) || root.id === "modal")) {
+      var mt = modal.querySelector("#modal-title, .modal h2");
+      if (mt) add(mt);
       var body = modal.querySelector(".modal-body");
-      if (body) body.querySelectorAll("p, .iv-a").forEach(function (p) { if (!p.classList.contains("small")) add(p); });
+      if (body) body.querySelectorAll("p, .iv-a, .j-facts, .fox-note").forEach(function (p) { if (!p.classList.contains("small")) add(p); });
     }
     return out;
+  }
+
+  function choiceItems(root) {
+    if (!root || !root.querySelectorAll) return [];
+    var out = [], n = 0;
+    root.querySelectorAll("#ch .choice, #rch .choice, #qw .opt, #ivq .iq, .lf-spot-choice").forEach(function (el) {
+      if (!isAnswerChoice(el)) return;
+      var letter = String.fromCharCode(65 + n);
+      n += 1;
+      out.push({ el: el, text: "Choice " + letter + ". " + textOf(el) });
+    });
+    return out;
+  }
+
+  function screenItems(root) {
+    var items = [], seen = [];
+    function add(el, text) {
+      if (!el || !document.body.contains(el)) return;
+      if (seen.indexOf(el) >= 0) return;
+      seen.push(el);
+      var item = { el: el };
+      if (text) item.text = text;
+      items.push(item);
+    }
+    if (root && root.querySelector) add(root.querySelector("section.panel > h2"));
+    autoBlocks(root).forEach(function (it) { add(it.el, it.text); });
+    return items.concat(choiceItems(root));
+  }
+
+  function speakScreen(root) {
+    if (!hasSynth()) return;
+    if (job && job.kind === "screen") { cancel(); return; }
+    root = root || activeRoot();
+    var items = screenItems(root);
+    if (!items.length) {
+      var panel = (root && root.querySelector && (root.querySelector("main .panel") || root.querySelector(".modal") || root.querySelector(".panel"))) || document.querySelector("main .panel");
+      if (panel) items = [{ el: panel }];
+    }
+    if (!items.length) return;
+    speakQueue(items, "screen");
+  }
+
+  function activeRoot() {
+    var modal = document.getElementById("modal");
+    if (modal && modal.querySelector && modal.querySelector(".modal")) {
+      var cs = window.getComputedStyle ? getComputedStyle(modal) : null;
+      if (!cs || cs.display !== "none") {
+        var titleEl = modal.querySelector("#modal-title");
+        var modalTitle = titleEl ? titleEl.textContent : "";
+        if (modalTitle !== "Menu" && modalTitle !== "🔊 Read aloud") return modal;
+      }
+    }
+    return document.getElementById("app") || document.body;
   }
 
   function screenKey() {
@@ -397,6 +482,7 @@ var READALOUD = (function () {
     if (!hasSynth()) { hideChrome(); return; }
     root = root || document.getElementById("app") || document.body;
     enhance(root);
+    ensureFab();
     refreshChrome();
     var titleEl = document.getElementById("modal-title");
     var modalTitle = titleEl ? titleEl.textContent : "";
@@ -406,17 +492,21 @@ var READALOUD = (function () {
     if (key === lastAutoKey) return;
     lastAutoKey = key;
     var items = autoBlocks(root);
-    if (items.length) speakQueue(items);
+    if (items.length) speakQueue(items, "auto");
   }
 
   function hideChrome() {
-    document.querySelectorAll(".ra-btn, .ra-settings, #ra-open, #read").forEach(function (n) {
+    document.querySelectorAll(".ra-btn, .ra-settings, #ra-open, #read, #ra-fab").forEach(function (n) {
       n.hidden = true; n.classList.add("ra-hidden");
     });
+    document.body.classList.remove("ra-fab-on", "ra-on");
   }
   function refreshChrome() {
     if (!hasSynth()) { hideChrome(); return; }
-    document.querySelectorAll(".ra-hidden").forEach(function (n) { n.hidden = false; n.classList.remove("ra-hidden"); });
+    document.querySelectorAll(".ra-hidden").forEach(function (n) {
+      if (n.id === "ra-fab") return;
+      n.hidden = false; n.classList.remove("ra-hidden");
+    });
     var s = settings();
     document.querySelectorAll("#ra-auto").forEach(function (b) { b.checked = !!s.auto; });
     document.querySelectorAll("[data-ra-speed]").forEach(function (b) {
@@ -425,12 +515,8 @@ var READALOUD = (function () {
       b.setAttribute("aria-pressed", on ? "true" : "false");
       b.classList.toggle("on", on);
     });
-    var hud = document.getElementById("read");
-    if (hud) {
-      hud.hidden = false;
-      hud.classList.toggle("ra-auto-on", !!s.auto);
-      hud.title = s.auto ? "Read this page aloud (Read to me is on)" : "Read this page aloud";
-    }
+    ensureFab();
+    syncFab();
   }
 
   function settingsHtml() {
@@ -438,7 +524,7 @@ var READALOUD = (function () {
     var s = settings();
     return '<div class="ra-settings" id="ra-settings">' +
       '<p class="small">The game can read the story and questions out loud using this device\'s built-in voice. No extra files are needed. Voice quality depends on the device.</p>' +
-      '<label class="switch"><input type="checkbox" id="ra-auto"' + (s.auto ? " checked" : "") + '> <span><b>Read to me</b>: automatically read each new screen (the story, then the question). Tap a speaker button to hear an answer choice.</span></label>' +
+      '<label class="switch"><input type="checkbox" id="ra-auto"' + (s.auto ? " checked" : "") + '> <span><b>Read to me</b>: automatically read each new screen (the story, then the question). A Read to me button appears so you can hear the page again (including answer choices). Tap a paragraph or clue to hear just that part. Tapping an answer still chooses it.</span></label>' +
       '<div class="ra-speed" role="group" aria-label="Reading speed">' +
       '<span class="ra-speed-lbl">Speed</span>' +
       '<button type="button" class="btn sm ra-speed-btn' + (s.speed === "slow" ? " on" : "") + '" data-ra-speed="slow" aria-pressed="' + (s.speed === "slow") + '">Slow</button>' +
@@ -450,7 +536,7 @@ var READALOUD = (function () {
     var auto = root.querySelector("#ra-auto");
     if (auto) auto.onchange = function () {
       setSettings({ auto: auto.checked });
-      if (window.FTBX && FTBX.toast) FTBX.toast(auto.checked ? "🔊 Read to me is on" : "Read to me is off");
+      if (window.FTBX && FTBX.toast) FTBX.toast(auto.checked ? "Read to me is on. Tap the button to hear the page, or tap a paragraph to hear just that part." : "Read to me is off");
     };
     root.querySelectorAll("[data-ra-speed]").forEach(function (b) {
       if (b.getAttribute("data-ra-name")) return;
@@ -468,16 +554,9 @@ var READALOUD = (function () {
 
   function wireHud(readText) {
     var r = document.getElementById("read");
-    if (!hasSynth()) { if (r) r.hidden = true; return; }
-    if (r) {
-      r.hidden = false;
-      r.onclick = function () {
-        var panel = document.querySelector("main .panel");
-        if (job && job.btn === r) { cancel(); return; }
-        if (panel) speakElement(panel, r);
-        else speakText(readText || "", r);
-      };
-    }
+    if (r) r.hidden = true;
+    if (!hasSynth()) { hideChrome(); return; }
+    ensureFab();
     afterScreen(document.getElementById("app") || document.body);
   }
 
@@ -537,6 +616,8 @@ var READALOUD = (function () {
     cancel: cancel,
     speakElement: speakElement,
     speakText: speakText,
+    speakScreen: speakScreen,
+    screenTexts: function (root) { return screenItems(root || activeRoot()).map(function (it) { return it.text || textOf(it.el); }); },
     enhance: enhance,
     afterScreen: afterScreen,
     attachBlock: attachBlock,

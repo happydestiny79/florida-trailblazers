@@ -25,19 +25,23 @@
   var SOURCE_QS = ["sa7", "sl5", "tl2"], MAP_QS = ["sa8", "mapToMose", "fm5", "fm6", "mapToSanLuis"];
 
   function fresh() {
-    return { scene: "intro", coins: START.coins, energy: START.energy, day: START.day, items: {}, clues: [], facts: [], visited: ["staug"], trail: ["staug"],
-      loc: "staug", spots: [], deduceTries: 0, shop: {}, oppChoice: null, travelChoice: null, timelineTries: 0, started: Date.now(), decoys: 0,
+    var loc = (window.CASE && CASE.startLoc()) || "staug";
+    var intro = (window.CASE && CASE.introId()) || "intro";
+    return { scene: intro, caseId: (window.CASE && CASE.id()) || "case1", coins: START.coins, energy: START.energy, day: START.day, items: {}, clues: [], facts: [], visited: [loc], trail: [loc],
+      loc: loc, spots: [], deduceTries: 0, shop: {}, oppChoice: null, travelChoice: null, timelineTries: 0, started: Date.now(), decoys: 0,
       log: {}, glossary: [], badges: [], hintsUsed: 0, name: "", runId: "r" + Date.now().toString(36) + Math.floor(Math.random() * 1e4) };
   }
-  function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* storage may be blocked; the game still works */ } saveReport(); }
-  function load() { try { var j = localStorage.getItem(SAVE_KEY); return j ? JSON.parse(j) : null; } catch (e) { return null; } }
+  function save() { if (S && window.CASE) { S.caseId = S.caseId || CASE.id(); CASE.remember(CASE.id()); } try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* storage may be blocked; the game still works */ } saveReport(); }
+  function load() { try { var j = localStorage.getItem(SAVE_KEY); var sv = j ? JSON.parse(j) : null; return window.CASE ? CASE.migrateSave(sv, CASE.id()) : sv; } catch (e) { return null; } }
   function clearSave() { try { localStorage.removeItem(SAVE_KEY); } catch (e) {} }
-  function reports() { try { return JSON.parse(localStorage.getItem(REPORT_KEY) || "[]"); } catch (e) { return []; } }
+  function reports(currentOnly) { if (!currentOnly && window.CASE && CASE.allReports) return CASE.allReports();
+    try { return JSON.parse(localStorage.getItem(REPORT_KEY) || "[]"); } catch (e) { return []; } }
   function saveReport(final) {
     if (!S || !S.runId) return;
-    var all = reports(), r = all.filter(function (x) { return x.runId === S.runId; })[0];
+    var all = reports(true), r = all.filter(function (x) { return x.runId === S.runId; })[0];
     if (!r) { r = { runId: S.runId, started: S.started }; all.push(r); }
     r.name = S.name || ""; r.updated = Date.now(); r.scene = S.scene; r.day = S.day; r.coins = S.coins; r.hints = S.hintsUsed; r.badges = S.badges.slice();
+    r.caseId = S.caseId || (window.CASE && CASE.id()) || "case1"; r.caseTitle = (window.CASE && CASE.meta(r.caseId).title) || r.caseId;
     r.glossary = S.glossary.length; r.log = S.log; if (final) { r.finished = true; r.rank = final.rank; r.score = final.score; }
     while (all.length > 60) all.shift();
     try { localStorage.setItem(REPORT_KEY, JSON.stringify(all)); } catch (e) {}
@@ -125,9 +129,9 @@
       '<div class="stat" title="Energy">⚡ <b>' + S.energy + '</b></div>' +
       (S.relaxed ? '<div class="stat" title="Day (relaxed mode: no deadline)">📅 <b>' + S.day + '</b></div></div>' : '<div class="stat' + late + '" title="Day">📅 <b>' + S.day + '</b>/' + START.deadline + '</div></div>') + snack + (window.V3 ? V3.hudExtra(sc) : "") +
       '<div class="hud-tools"><button class="hud-btn" id="nb" aria-label="Detective Notebook">📓<span class="lbl"> Notebook</span> <span class="count">' + S.clues.length + '</span></button>' +
-      '<button class="hud-btn" id="journalbtn" aria-label="Florida Field Journal">📒<span class="lbl"> Journal</span> <span class="count">' + (window.JOURNAL ? JOURNAL.count() : 0) + '/' + (window.JOURNAL ? JOURNAL.TOTAL : 9) + '</span></button>' +
+      '<button class="hud-btn" id="journalbtn" aria-label="Florida Field Journal">📒<span class="lbl"> Journal</span> <span class="count">' + (window.JOURNAL ? JOURNAL.count() : 0) + '/' + (window.JOURNAL && JOURNAL.packTotal ? JOURNAL.packTotal() : (window.JOURNAL ? JOURNAL.TOTAL : 9)) + '</span></button>' +
       '<button class="hud-btn" id="mapbtn" aria-label="Case map">🗺️<span class="lbl"> Map</span></button>' +
-      '<button class="hud-btn icon" id="read" aria-label="Read this page aloud" title="Read aloud">🗣️</button>' + soundBtn() + '</div></header>'; }
+      soundBtn() + '</div></header>'; }
   function wireHud(readText) {
     var nb = document.getElementById("nb"); if (nb) nb.onclick = function () { notebook(); };
     var jb = document.getElementById("journalbtn"); if (jb && window.JOURNAL) jb.onclick = function () { JOURNAL.open({ from: "game" }); };
@@ -146,7 +150,7 @@
     wireSound(); if (window.V3) V3.wireHudExtra();
   }
   function caseMap() {
-    modal("🗺️ Case Map: Your Trail", '<div class="map-mini">' + ART.floridaMap({ current: S.loc, visited: S.visited, trail: S.trail, villain: window.V3 ? V3.pennyLoc() : null }) + '</div><p class="small">The gold line fills in as you travel. ✔ = places you have searched. Stops: ' +
+    modal("🗺️ " + ((window.CASE && CASE.id() === "case2") ? "Tampa Bay Map: Your Trail" : "Case Map: Your Trail"), '<div class="map-mini">' + caseMapHtml({ current: S.loc, visited: S.visited, trail: S.trail, villain: window.V3 ? V3.pennyLoc() : null }) + '</div><p class="small">The gold line fills in as you travel. ✔ = places you have searched. Stops: ' +
       S.trail.map(function (id) { return LOCATIONS[id].name; }).join(" → ") + '</p>', [{ label: "Close map" }], { escClose: true, cls: "wide" }); }
 
   /* ---------- vocabulary pop-ups ---------- */
@@ -232,7 +236,7 @@
     else partnerSay(SAM_WRONG[(L.tries - 1) % SAM_WRONG.length]); }
 
   /* ---------- page frame: real photo background with slow Ken Burns pan ---------- */
-  var DEFAULT_BG = { office: "pelican", staug: "castillo_aerial", mose: "mose_pano", sanluis: "sl_grounds" };
+  var DEFAULT_BG = { office: "pelican", staug: "castillo_aerial", mose: "mose_pano", sanluis: "sl_grounds", weedon: "weedon_boardwalk", safetyharbor: "tocobaga_mound", fortbrooke: "fort_brooke_1835", plant: "hotel_minarets", ybor: "ybor_factory", port: "port_1898", portbay: "port_1898", apollobeach: "manatee_photo" };
   function photoBg(key, seed) { var I = IMAGES[key]; if (!I) return "";
     return '<div class="bg"><img class="kb kb' + (seed % 4) + '" src="' + img(key) + '" alt="' + esc(I.alt) + '" width="' + I.w + '" height="' + I.h + '"></div>'; }
   function captionChip(key) { var I = IMAGES[key]; if (!I) return "";
@@ -322,6 +326,7 @@
     if (t === "deduction") return deductionScene(sc);
     if (t === "timeline") return timelineScene(sc);
     if (t === "win") return winScene(sc);
+    if (t === "comingsoon") return comingSoonScene(sc);
   }
   function paras(sc) { return (sc.text || []).map(function (p) { return "<p>" + p + "</p>"; }).join(""); }
   function speakerHtml(sc) { return sc.speaker ? '<div class="speaker">' + sc.speaker + ' says:</div>' : ""; }
@@ -333,7 +338,7 @@
     frame(sc, speakerHtml(sc) + p + '<div class="feedback" id="fb" aria-live="polite"></div><div class="choices" id="ch"></div>');
     var ch = document.getElementById("ch");
     sc.choices.forEach(function (c) { var b = el('<button class="btn choice">' + c.label + '</button>');
-      b.onclick = function () { SFX.play("click"); applyEffect(c.effect); checkTired(function () { go(c.next); }); }; ch.appendChild(b); });
+      b.onclick = function () { SFX.play("click"); applyEffect(c.effect); checkTired(function () { runChoice(c); }); }; ch.appendChild(b); });
     wireHud(strip(speakerHtml(sc) + p + sc.choices.map(function (c) { return c.label + ". "; }).join(" ")));
   }
 
@@ -568,6 +573,30 @@
     wireHud(strip(app.querySelector(".panel").innerHTML));
   }
 
+
+  function runChoice(c) {
+    if (!c) return;
+    if (c.act === "journal") { if (window.JOURNAL) JOURNAL.open({ from: "game" }); return; }
+    if (c.act === "notebook") { notebook(); return; }
+    if (c.act === "title") { title(); return; }
+    if (c.next) go(c.next);
+  }
+  function comingSoonScene(sc) {
+    var upcoming = (sc.comingSoon || []).map(function (row) {
+      return '<li class="soon-item"><span class="soon-ch">Chapter ' + row.ch + '</span><b>' + row.name + '</b><span class="soon-tease">' + row.tease + '</span></li>';
+    }).join("");
+    var p = paras(sc);
+    frame(sc, speakerHtml(sc) + p +
+      (upcoming ? '<div class="coming-soon"><p class="soon-kicker">Coming soon</p><ul class="soon-list">' + upcoming + '</ul></div>' : "") +
+      '<div class="feedback" id="fb" aria-live="polite"></div><div class="choices" id="ch"></div>');
+    var ch = document.getElementById("ch");
+    (sc.choices || []).forEach(function (c) { var b = el('<button class="btn choice' + (c.act === "title" ? " primary" : "") + '">' + c.label + '</button>');
+      b.onclick = function () { SFX.play("click"); runChoice(c); }; ch.appendChild(b); });
+    wireHud(strip(speakerHtml(sc) + p + (sc.choices || []).map(function (c) { return c.label + ". "; }).join(" ")));
+  }
+  function caseMapHtml(opts) {
+    return (window.CASE && CASE.mapHtml) ? CASE.mapHtml(opts) : ART.floridaMap(opts);
+  }
   function bindAct(g, act) { g.addEventListener("click", act); g.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); act(); } }); }
 
   function insetScene(sc) {
@@ -585,7 +614,7 @@
 
   function travelTo(sc, id, t, how) {
     applyEffect({ coins: -t.coins, days: t.days, energy: -t.energy }); addUnique(S.visited, id); S.trail.push(id); S.loc = id; SFX.play("travel"); save();
-    modal("🧳 Traveling to " + LOCATIONS[id].name, '<div class="map-mini">' + ART.floridaMap({ current: id, trail: S.trail, visited: S.visited, animate: true, villain: window.V3 ? V3.pennyLoc() : null }) + '</div><p>' + how + '</p>',
+    modal("🧳 Traveling to " + LOCATIONS[id].name, '<div class="map-mini">' + caseMapHtml({ current: id, trail: S.trail, visited: S.visited, animate: true, villain: window.V3 ? V3.pennyLoc() : null }) + '</div><p>' + how + '</p>',
       [{ label: "Arrive ➜", fn: function () { checkTired(function () { go(sc.next); }); } }], { cls: "wide" }); }
   function decoyTrip(sc, id) {
     var pay = Math.min(3, S.coins), L = LOCATIONS[id], from = S.loc; S.decoys++; applyEffect({ coins: -pay, days: 1, energy: -1 }); S.trail.push(id); S.trail.push(from); addUnique(S.visited, id); save();
@@ -599,7 +628,7 @@
   function mapScene(sc) {
     var tc = sc.target === "sanluis" && S.travelChoice ? TRAVEL_WEST.filter(function (t) { return t.id === S.travelChoice; })[0] : null;
     var hint = S.items.map ? '<button class="btn sm" id="hint">🗺️ Use your road map</button>' : '';
-    frame(sc, '<p class="clue-banner">🔎 ' + sc.text + '</p>' + hint + '<div class="map-wrap">' + ART.floridaMap({ current: S.loc, clickable: true, visited: S.visited, trail: S.trail }) + '</div><div class="feedback" id="fb" aria-live="polite"></div>', { wide: true });
+    frame(sc, '<p class="clue-banner">🔎 ' + sc.text + '</p>' + hint + '<div class="map-wrap">' + caseMapHtml({ current: S.loc, clickable: true, visited: S.visited, trail: S.trail }) + '</div><div class="feedback" id="fb" aria-live="polite"></div>', { wide: true });
     qlog(S.scene);
     if (S.items.map) document.getElementById("hint").onclick = function () { SFX.play("hint");
       fb("try", sc.target === "mose" ? "🗺️ Your road map: Fort Mose is the fort symbol just NORTH of St. Augustine (joined by a dotted line)." : "🗺️ Your road map: the RED STAR is the state capital. Look WEST (left) in the Panhandle."); };
@@ -617,7 +646,7 @@
   }
 
   function mapQScene(sc) {
-    frame(sc, '<p class="clue-banner">🎫 ' + sc.text + '</p><div class="map-wrap">' + ART.floridaMap({ current: S.loc, clickable: true, visited: S.visited, trail: S.trail }) + '</div><div class="feedback" id="fb" aria-live="polite"></div><div class="choices" id="ch"></div>', { wide: true });
+    frame(sc, '<p class="clue-banner">🎫 ' + sc.text + '</p><div class="map-wrap">' + caseMapHtml({ current: S.loc, clickable: true, visited: S.visited, trail: S.trail }) + '</div><div class="feedback" id="fb" aria-live="polite"></div><div class="choices" id="ch"></div>', { wide: true });
     var L = qlog(S.scene);
     document.querySelectorAll(".marker.clickable").forEach(function (g) { var id = g.getAttribute("data-loc");
       bindAct(g, function () { if (L.ok) return; if (id === "sanluis") { attempt(S.scene, true);
@@ -628,7 +657,7 @@
   }
 
   function scaleScene(sc) {
-    frame(sc, '<p class="clue-banner">📏 ' + sc.text + '</p><div class="map-wrap">' + ART.floridaMap({ current: S.loc, route: ["staug", "sanluis"], visited: S.visited, trail: S.trail }) + '</div><div class="feedback" id="fb" aria-live="polite"></div><div class="choices" id="ch"></div>', { wide: true });
+    frame(sc, '<p class="clue-banner">📏 ' + sc.text + '</p><div class="map-wrap">' + caseMapHtml({ current: S.loc, route: ["staug", "sanluis"], visited: S.visited, trail: S.trail }) + '</div><div class="feedback" id="fb" aria-live="polite"></div><div class="choices" id="ch"></div>', { wide: true });
     var ch = document.getElementById("ch"), L = qlog(S.scene);
     sc.choices.forEach(function (c, i) { var b = el('<button class="btn choice" data-i="' + i + '">' + c.label + '</button>'); b.onclick = function () {
       if (c.correct) { attempt(S.scene, true); fb("good", "✅ " + c.feedback); nextBtn("Continue ➜", function () { go(c.next); }); }
@@ -725,21 +754,75 @@
       '<h2>What you learned</h2><ul class="learned">' + learned.map(function (l) { return "<li>" + l + "</li>"; }).join("") + '</ul>' +
       '<div class="btn-row"><button class="btn primary big" id="again">▶ Play again</button><button class="btn" id="home">Title screen</button><button class="btn ghost" id="wcred">📜 Credits</button></div></section></main>';
     if (window.V3) V3.wireWin();
-    document.getElementById("again").onclick = function () { newCase(); };
+    document.getElementById("again").onclick = function () { newCase(S && S.caseId); };
     document.getElementById("home").onclick = title; document.getElementById("wcred").onclick = function () { credits(title); };
     var cc = app.querySelector(".cap-chip"); if (cc) cc.onclick = function () { imageInfo("sl_council"); };
     clearSave();
   }
 
   /* ---------- title ---------- */
-  function newCase() { if (window.V3) { V3.newCase(function (name, team) { clearSave(); S = fresh(); S.name = String(name || "").trim().slice(0, 40); V3.initState(S, team); enter(SCENES.intro); save(); render(); }); return; }
+
+  function continueButtons(list, lastId) {
+    if (!list || !list.length) return "";
+    var prefer = lastId || (list[0] && list[0].id);
+    var html = "";
+    list.forEach(function (c, i) {
+      var isMain = (c.id === prefer) || (list.length === 1) || (i === 0 && !list.some(function (x) { return x.id === prefer; }));
+      var id = isMain ? "cont" : ("cont-" + c.id);
+      var label = "Continue" + (list.length > 1 ? " Case " + (c.id === "case2" ? "2" : "1") : " case");
+      if (c.name) label += " (" + esc(c.name) + ")";
+      html += '<button type="button" class="btn big title-cont" id="' + id + '" data-case="' + c.id + '">' + label + '</button>';
+    });
+    return html;
+  }
+  function wireContinueButtons(list) {
+    (list || []).forEach(function (c) {
+      var btn = document.querySelector('.title-cont[data-case="' + c.id + '"]');
+      if (!btn) return;
+      btn.onclick = function () { continueCase(c.id, c.save); };
+    });
+  }
+  function continueCase(id, sv) {
+    if (window.CASE) CASE.activate(id);
+    S = sv || load();
+    if (!S) { title(); return; }
+    render();
+  }
+  function openCasePicker() {
+    if (!window.CASE) { newCase(); return; }
+    var cards = CASE.ids().map(function (id) {
+      var m = CASE.meta(id);
+      var soon = m.status && m.status !== "playable" ? '<span class="case-status">Chapters 1–2 playable · 3–5 coming soon</span>' : '<span class="case-status">Fully playable</span>';
+      return '<button type="button" class="case-card" id="pick-' + id + '" data-case="' + id + '">' +
+        '<img class="case-card-art" src="' + m.cover + '" alt="">' +
+        '<span class="case-card-kicker">Case ' + (id === "case2" ? "2" : "1") + '</span>' +
+        '<strong class="case-card-title">' + esc(m.title) + '</strong>' +
+        '<span class="case-card-sub">' + esc(m.subtitle) + '</span>' +
+        '<span class="case-card-blurb">' + esc(m.blurb) + '</span>' + soon +
+        '</button>';
+    }).join("");
+    modal("🕵️ Choose a case", '<div class="case-picker" id="case-picker">' + cards + '</div>',
+      [{ label: "Cancel", cls: "ghost" }], { cls: "wide case-picker-modal", escClose: true });
+    CASE.ids().forEach(function (id) {
+      var b = document.getElementById("pick-" + id);
+      if (b) b.onclick = function () { closeModal(true); newCase(id); };
+    });
+  }
+  function beginCase(name, team) {
+    clearSave(); S = fresh(); S.name = String(name || "").trim().slice(0, 40); if (window.V3) V3.initState(S, team);
+    var intro = (window.CASE && CASE.introId()) || "intro";
+    enter(SCENES[intro] || SCENES.intro); save(); render();
+  }
+  function newCase(caseId) {
+    if (window.CASE) CASE.activate(caseId || CASE.id() || "case1");
+    if (window.V3) { V3.newCase(function (name, team) { beginCase(name, team); }); return; }
     var prev = S && S.name;
     modal("🕵️ New case", '<p>What should we call you, detective? <span class="small">(Optional. First name or a nickname only. It is saved only on this device so your teacher can see your progress.)</span></p>' +
       '<label class="typed-lbl" for="pname">Detective name</label><input id="pname" type="text" maxlength="24" autocomplete="off" value="' + esc(prev || "") + '">',
       [{ label: "▶ Start the case", cls: "primary", fn: function () { start(nm); } }, { label: "Cancel", cls: "ghost" }], { escClose: true, noFocus: true });
     var inp = document.getElementById("pname"), nm = inp.value;
     inp.oninput = function () { nm = inp.value; }; inp.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); nm = inp.value; closeModal(true); start(nm); } }; inp.focus();
-    function start(name) { clearSave(); S = fresh(); S.name = String(name || "").trim().slice(0, 24); enter(SCENES.intro); save(); render(); } }
+    function start(name) { beginCase(name); } }
   function bonusPreview() {
     modal("Swamp Fox bonuses",
       '<div class="bonus-preview"><img class="fox-shot" src="assets/img/title/icon_fox.webp" alt="The Swamp Fox, a sly thief in a raccoon mask, holding a calling card">' +
@@ -750,7 +833,11 @@
       [{ label: "Got it" }], { escClose: true });
   }
   function title() {
-    stopSpeak(); closeModal(true); var sv = load(); var canContinue = sv && sv.scene && sv.scene !== "win" && sv.log;
+    stopSpeak(); closeModal(true); var continues = window.CASE && CASE.continuable ? CASE.continuable() : [];
+    var sv = load();
+    if (!continues.length && sv && sv.scene && sv.scene !== "win" && sv.log) continues = [{ id: (sv.caseId || "case1"), name: sv.name || "", title: GAME_SUBTITLE, scene: sv.scene, save: sv }];
+    var lastId = window.CASE && CASE.lastId ? CASE.lastId() : "case1";
+    var canContinue = continues.length > 0;
     var topbar = '<div class="title-topbar">' +
       '<button type="button" class="title-iconbtn" id="teacher" aria-label="Teacher view"><img src="assets/img/title/icon_teacher.webp" alt="">Teacher</button>' +
       (window.READALOUD && READALOUD.available() ? '<button type="button" class="title-iconbtn" id="ra-open" aria-label="Read aloud"><img src="assets/img/title/icon_readaloud.webp" alt="">Read aloud</button>' : "") +
@@ -759,16 +846,16 @@
     app.innerHTML = photoBg("castillo_aerial", 1) + '<main class="title-screen title-v9">' + topbar +
       '<div class="title-card"><div class="title-hero"><img src="assets/img/title/hero.webp" alt="Penny Pinch and junior detectives at the Castillo de San Marcos, ready to start a case">' +
       '<div class="title-hero-copy"><div class="title-kicker">A Florida history mystery</div><h1>' + esc(GAME_TITLE) + '</h1></div></div>' +
-      '<h2>' + esc(GAME_SUBTITLE) + '</h2>' +
-      '<p class="title-blurb">A junior history detective adventure for 3rd and 4th graders. Travel to real places in early Florida, collect clues, and catch the thief!</p>' +
+      '<h2>Florida history mysteries</h2>' +
+      '<p class="title-blurb">A junior history detective adventure for 3rd and 4th graders. Travel to real places in early Florida, collect clues, and catch the thief! Two cases: <b>The Stolen Founding Stone</b> and <b>The Cigar Box Code</b>.</p>' +
       '<div class="btn-col title-actions"><button type="button" class="btn big primary title-new title-glow" id="new"><img src="assets/img/title/icon_case.webp" alt=""> New case</button>' +
-      (canContinue ? '<button type="button" class="btn big title-cont" id="cont">Continue case' + (sv.name ? " (" + esc(sv.name) + ")" : "") + '</button>' : "") + '</div>' +
+      continueButtons(continues, lastId) + '</div>' +
       '<div class="title-tiles">' + (window.V3 ? V3.titleButtons() : "") +
       '<button type="button" class="title-tile" id="bonus" aria-label="Swamp Fox bonus and mini-games"><img class="title-tile-art" src="assets/img/title/icon_fox.webp" alt=""><span>Swamp Fox</span></button></div>' +
       '<div class="btn-row2 title-foot"><button type="button" class="btn ghost" id="about">About</button><button type="button" class="btn ghost" id="credits">Credits</button></div>' +
       '<p class="small">Version ' + esc(GAME_VERSION) + ' • Works offline</p></div>' + captionChip("castillo_aerial") + '</main>';
-    document.getElementById("new").onclick = newCase;
-    if (canContinue) document.getElementById("cont").onclick = function () { S = sv; render(); };
+    document.getElementById("new").onclick = openCasePicker;
+    wireContinueButtons(continues);
     document.getElementById("teacher").onclick = teacherView;
     document.getElementById("credits").onclick = function () { credits(title); };
     document.getElementById("about").onclick = function () { modal("About " + esc(GAME_TITLE), "<p>The Founding Stone, the thief, the suspects, Detective " + PARTNER_NAME + ", the rangers, the guides, <b>the Swamp Fox</b>, Gator Gil and Minnow are <b>made up</b>.</p><p>The places are real, and so are the photos and old maps. The history and geography facts come from the National Park Service, Florida State Parks, the Florida Department of State, Mission San Luis, and the Florida Museum. See FACT_CHECK.md for sources and CREDITS.md (or the Credits screen) for every picture.</p><p>Everything is stored in the game folder, so no internet is needed. Music and sound effects are made live by this device (no audio files).</p>", [{ label: "OK" }], { escClose: true }); };
@@ -809,8 +896,10 @@
   function teacherView() {
     stopSpeak(); closeModal(true);
     var uses = {}, eUses = {};
-    var locName = function (sc) { return sc.loc === "office" ? "Intro" : (LOCATIONS[sc.loc] ? LOCATIONS[sc.loc].name : ""); };
-    Object.keys(SCENES).forEach(function (id) { var sc = SCENES[id]; (sc.teaches || []).forEach(function (c) { (uses[c] = uses[c] || []).push(sc); }); (sc.ela || []).forEach(function (c) { (eUses[c] = eUses[c] || []).push(sc); }); });
+    var sceneOf = function (id) { return (window.CASE && CASE.sceneOf && CASE.sceneOf(id)) || SCENES[id]; };
+    var allScenes = (window.CASE && CASE.allPlayableScenes && CASE.allPlayableScenes()) || SCENES;
+    var locName = function (sc) { var L = (window.CASE && CASE.locOf && sc.loc) ? CASE.locOf(sc.loc) : LOCATIONS[sc.loc]; return sc.loc === "office" ? "Intro" : (L ? L.name : ""); };
+    Object.keys(allScenes).forEach(function (id) { var sc = allScenes[id]; (sc.teaches || []).forEach(function (c) { (uses[c] = uses[c] || []).push(sc); }); (sc.ela || []).forEach(function (c) { (eUses[c] = eUses[c] || []).push(sc); }); });
     var rows = Object.keys(BENCHMARKS).map(function (code) {
       var list = (uses[code] || []).map(function (sc) { return "<li><b>" + locName(sc) + ":</b> " + sc.title + (sc.ela ? " <span class='pill'>+ELA</span>" : "") + "</li>"; }).join("");
       var strand = code.indexOf(".FL.") > 0 ? "Financial Literacy (supplies)" : code.indexOf(".G.") > 0 ? "Geography (clues & maps)" : "American History (story chapters)";
@@ -818,8 +907,8 @@
     var erows = Object.keys(ELA_BENCHMARKS).map(function (code) { var B = ELA_BENCHMARKS[code];
       var list = (eUses[code] || []).map(function (sc) { var P = sc.passage ? PASSAGES[sc.passage] : null; return "<li><b>" + sc.title.replace("Reading Room: ", "") + "</b> (" + qType(sc) + ")" + (P ? " — passage: <i>" + P.title + "</i>" : "") + ((sc.teaches || []).length ? "; with " + sc.teaches.join(", ") : "") + "</li>"; }).join("");
       return "<tr><td class='code'>" + code + "</td><td>" + B.text + "<div class='strand'>Grade " + B.grade + " • " + B.strand + " • B.E.S.T. ELA 2025, PDF p. " + B.page + "</div></td><td><ul>" + list + "</ul></td></tr>"; }).join("");
-    var R = reports(), qids = Object.keys(SCENES).filter(function (id) { return SCENES[id].hints && SCENES[id].hints.length; });
-    var agg = qids.map(function (id) { var sc = SCENES[id], p = 0, f = 0, t = 0, h = 0, st = 0, wrong = {};
+    var R = reports(), qids = Object.keys(allScenes).filter(function (id) { return allScenes[id].hints && allScenes[id].hints.length; });
+    var agg = qids.map(function (id) { var sc = allScenes[id], p = 0, f = 0, t = 0, h = 0, st = 0, wrong = {};
       R.forEach(function (r) { var L = r.log && r.log[id]; if (!L || !L.tries) return; p++; if (L.first) f++; t += L.tries; h += L.hints; if (L.stuck || L.revealed) st++; (L.wrong || []).forEach(function (w) { wrong[w] = (wrong[w] || 0) + 1; }); });
       var top = Object.keys(wrong).sort(function (a, b) { return wrong[b] - wrong[a]; }).slice(0, 2).map(function (w) { return esc(w) + (wrong[w] > 1 ? " ×" + wrong[w] : ""); }).join("; ");
       return { id: id, sc: sc, p: p, f: f, t: t, h: h, st: st, top: top }; });
@@ -827,9 +916,9 @@
       return '<tr class="' + (a.st ? "stuckrow" : "") + '" data-q="' + a.id + '"><td>' + (a.sc.chapter || "-") + '</td><td><b>' + a.sc.title + '</b><div class="strand">' + qType(a.sc) + ' • ' + codes + '</div></td><td>' + a.p + '</td><td>' + (a.p ? Math.round(a.f / a.p * 100) + "%" : "–") + '</td><td>' + (a.p ? (a.t / a.p).toFixed(1) : "–") + '</td><td>' + (a.p ? (a.h / a.p).toFixed(1) : "–") + '</td><td>' + (a.st ? "⚠️ " + a.st : "0") + '</td><td class="small">' + (a.top || "") + '</td></tr>'; }).join("");
     var runRows = R.slice().reverse().map(function (r) { var stuck = Object.keys(r.log || {}).filter(function (k) { return r.log[k].stuck || r.log[k].revealed; });
       return '<tr><td>' + esc(r.name || "(no name)") + '</td><td>' + new Date(r.started).toLocaleString() + '</td><td>' + (r.finished ? "✅ Finished" : "In progress: " + esc((SCENES[r.scene] || {}).title || r.scene)) + '</td><td>' + (r.rank ? esc(r.rank) + " (" + r.score + ")" : "–") + '</td><td>' + (r.hints || 0) + '</td><td>' +
-        (stuck.length ? stuck.map(function (k) { var L = r.log[k]; return "<div>⚠️ <b>" + (SCENES[k] ? SCENES[k].title : k) + "</b>: " + L.tries + " tries, " + L.hints + " hints" + (L.revealed ? ", used “Show me”" : "") + (L.wrong && L.wrong.length ? "<br><span class='small'>Wrong answers: " + L.wrong.map(esc).join(" | ") + "</span>" : "") + "</div>"; }).join("") : "None 🎉") + '</td></tr>'; }).join("");
+        (stuck.length ? stuck.map(function (k) { var L = r.log[k]; return "<div>⚠️ <b>" + (sceneOf(k) ? sceneOf(k).title : k) + "</b>: " + L.tries + " tries, " + L.hints + " hints" + (L.revealed ? ", used “Show me”" : "") + (L.wrong && L.wrong.length ? "<br><span class='small'>Wrong answers: " + L.wrong.map(esc).join(" | ") + "</span>" : "") + "</div>"; }).join("") : "None 🎉") + '</td></tr>'; }).join("");
     var tl = TIMELINE.map(function (t) { return t.year; }).join(" → ");
-    app.innerHTML = '<main class="teacher"><div class="teacher-head"><h1>🍎 Teacher View: ' + esc(GAME_SUBTITLE) + '</h1>' +
+    app.innerHTML = '<main class="teacher"><div class="teacher-head"><h1>🍎 Teacher View: ' + esc(GAME_TITLE) + '</h1>' +
       '<div><button class="btn" id="print">🖨 Print</button> <button class="btn primary" id="back">← Back to title</button></div></div>' +
       '<p><b>Grades 3–4. Social Studies + ELA Reading.</b> Social Studies benchmark wording is copied exactly from <i>Florida\'s State Academic Standards – Social Studies, 2026</i> (Rule 6A-1.09401, F.A.C.). ELA wording is copied exactly from <a href="' + ELA_SOURCE.url + '" target="_blank" rel="noopener">' + esc(ELA_SOURCE.title) + '</a>. Play time: about 25–35 minutes.</p>' +
       (window.V3 ? V3.teacherHtml() : "") +
@@ -859,15 +948,15 @@
     document.querySelectorAll(".t-nav a").forEach(function (a) { a.onclick = function (e) { e.preventDefault(); var t = document.querySelector(a.getAttribute("href")); if (t) { if (t.tagName === "DETAILS") t.open = true; t.scrollIntoView({ behavior: "smooth" }); } }; });
     var csv = document.getElementById("csv"); if (csv && R.length) csv.onclick = function () { downloadCsv(R); };
     var clr = document.getElementById("clear"); if (clr && R.length) clr.onclick = function () { modal("Clear all play records?", "<p>This removes every student record stored in this browser. It can't be undone.</p>",
-      [{ label: "Yes, clear records", fn: function () { try { localStorage.removeItem(REPORT_KEY); } catch (e) {} teacherView(); } }, { label: "Cancel", cls: "ghost" }], { escClose: true }); };
+      [{ label: "Yes, clear records", fn: function () { try { localStorage.removeItem(REPORT_KEY); if (window.CASE) { CASE.ids().forEach(function (id) { localStorage.removeItem(CASE.reportKey(id)); }); } } catch (e) {} teacherView(); } }, { label: "Cancel", cls: "ghost" }], { escClose: true }); };
     if (window.V3) V3.wireTeacher();
     window.scrollTo(0, 0);
   }
   function csvCell(v) { v = String(v == null ? "" : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
   function buildCsv(R) {
-    var lines = [["student", "started", "finished", "rank", "score", "question_id", "question", "type", "chapter", "ss_benchmarks", "ela_benchmarks", "tries", "hints", "first_try", "stuck", "used_show_me", "seconds", "wrong_answers"].join(",")];
-    R.forEach(function (r) { Object.keys(r.log || {}).forEach(function (k) { var L = r.log[k], sc = SCENES[k]; if (!sc || !L.tries) return;
-      lines.push([r.name, new Date(r.started).toISOString(), r.finished ? "yes" : "no", r.rank || "", r.score == null ? "" : r.score, k, strip(sc.title), qType(sc), sc.chapter, (sc.teaches || []).join(" "), (sc.ela || []).join(" "),
+    var lines = [["student", "case", "started", "finished", "rank", "score", "question_id", "question", "type", "chapter", "ss_benchmarks", "ela_benchmarks", "tries", "hints", "first_try", "stuck", "used_show_me", "seconds", "wrong_answers"].join(",")];
+    R.forEach(function (r) { Object.keys(r.log || {}).forEach(function (k) { var L = r.log[k], sc = (window.CASE && CASE.sceneOf && CASE.sceneOf(k)) || SCENES[k]; if (!sc || !L.tries) return;
+      lines.push([r.name, r.caseTitle || r.caseId || "", new Date(r.started).toISOString(), r.finished ? "yes" : "no", r.rank || "", r.score == null ? "" : r.score, k, strip(sc.title), qType(sc), sc.chapter, (sc.teaches || []).join(" "), (sc.ela || []).join(" "),
         L.tries, L.hints, L.first ? "yes" : "no", L.stuck ? "yes" : "no", L.revealed ? "yes" : "no", Math.round((L.ms || 0) / 1000), (L.wrong || []).join(" | ")].map(csvCell).join(",")); }); });
     return lines.join("\n"); }
   function downloadCsv(R) { var blob = new Blob([buildCsv(R)], { type: "text/csv" }), a = document.createElement("a");
@@ -875,7 +964,10 @@
 
   /* expose a tiny API for automated play-testing */
   window.FTB = { state: function () { return S; }, go: go, title: title, teacher: teacherView, credits: credits, notebook: notebook, csv: function () { return buildCsv(reports()); },
-    checkTyped: checkTyped, score: function () { return scoreRun(S); }, newCase: function (name, team) { clearSave(); S = fresh(); S.name = name || ""; if (window.V3) V3.initState(S, team); enter(SCENES.intro); save(); render(); },
+    checkTyped: checkTyped, score: function () { return scoreRun(S); },
+    newCase: function (name, team, caseId) { if (window.CASE) CASE.activate(caseId || "case1"); beginCase(name, team); },
+    startCase: function (caseId, name, team) { if (window.CASE) CASE.activate(caseId || "case1"); beginCase(name, team); },
+    continueCase: continueCase, openCasePicker: openCasePicker,
     readAloud: function () { return window.READALOUD || null; } };
   /* internals for the v3 add-ons (js/v3.js) */
   window.FTBX = { S: function () { return S; }, setS: function (x) { S = x; }, app: function () { return app; }, el: el, esc: esc, strip: strip, modal: modal, closeModal: closeModal, toast: toast, frame: frame, go: go, render: render, save: save,

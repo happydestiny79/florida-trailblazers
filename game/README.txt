@@ -1,4 +1,4 @@
-FLORIDA TRAILBLAZERS: Case 1, The Stolen Founding Stone (version 9.0 preview)
+FLORIDA TRAILBLAZERS: Case 1, The Stolen Founding Stone (version 10.0 preview)
 
 HOW TO PLAY
   Double-click index.html. It opens in any modern browser (Chrome/Chromebook, Edge, Firefox, Safari),
@@ -8,9 +8,21 @@ HOW TO PLAY
   Sound (music and effects) is made live by the browser (no audio files) and starts OFF; use the
   speaker button or the Sound settings. Music and Effects have separate volume sliders. Teachers can
   turn on "Classroom quiet" to mute sound for the whole class (or one student).
-  Read-aloud uses the device's built-in voice (no audio files). Tap a 🔊 button next to a passage,
-  clue, question, answer or Swamp Fox calling card, or turn on "Read to me" so each new screen is
-  read automatically. Music quietly ducks while the voice is speaking.
+  Read-aloud uses the device's built-in voice (no audio files). Turn on "Read to me" to automatically
+  read each new screen and to show one floating Read to me button. Tap that button to hear the page
+  (story, question, then answer choices). Tap it again to stop. Tap a paragraph or clue to hear just
+  that part. Tapping an answer still chooses it. Music quietly ducks while the voice is speaking.
+
+WHAT'S NEW IN V10 PREVIEW
+  - One discreet floating Read to me button instead of a speaker button on every passage, question,
+    answer, clue, calling card, and Field Journal card. The button is about 44px, sits in the
+    bottom corner (with safe-area insets), and is hidden whenever Read to me is off. Tap it to
+    hear the current screen; tap again to stop. A subtle playing state shows when the voice is on.
+  - When Read to me is on, tap a paragraph, clue, or question to hear just that part. Answer
+    choices are not read by tapping them (that would select the answer). The floating button
+    reads all choices with letters (Choice A, Choice B, ...).
+  - Vocabulary taps, word highlighting, speed control, teacher per-student auto-read, and the
+    title / Menu / Teacher settings are unchanged.
 
 WHAT'S NEW IN V9 PREVIEW
   - Painted title screen: a hero scene with Penny Pinch and junior detectives at the Castillo
@@ -27,8 +39,7 @@ WHAT'S NEW IN V7 PREVIEW
   - Two short, skippable bonus mini-games (about 30 seconds): Marsh Canoe Dash at Fort Mose,
     and Place the Landmarks (a map-sort) at Tallahassee. Each can reward a journal card.
 
-  - Calling cards at St. Augustine, Fort Mose and Mission San Luis, with a speaker button so they
-    can be read aloud. Right answers fill a "Closing in" meter and sometimes reveal a chase clue.
+  - Calling cards at St. Augustine, Fort Mose and Mission San Luis, which can be read aloud with Read to me or by tapping the card text. Right answers fill a "Closing in" meter and sometimes reveal a chase clue.
     Wrong answers do not take the meter down.
   - At the end of the case you catch her (caught pose, confetti, fanfare). Her mugshot is added to
     the Detective ID card under "Most Wanted / Captured," and it stays saved with the student profile.
@@ -38,11 +49,11 @@ WHAT'S NEW IN V7 PREVIEW
     Web Audio API — no audio files, no downloads, no extra cost. Sound still starts OFF.
 
 WHAT'S NEW IN V6 PREVIEW
-  - Read-aloud for students who struggle with reading. A speaker button sits on story text,
-    reading passages, clues, questions, answer choices and Local Flavor text. Words highlight
-    as they are read (or the whole block highlights if the device cannot track words).
+  - Read-aloud for students who struggle with reading. Words highlight as they are read (or the
+    whole block highlights if the device cannot track words).
   - "Read to me" can be turned on per student (title screen, in-game Menu, or Teacher view).
-    When it is on, each new screen reads the story and then the question. Speed: Slow or Normal.
+    When it is on, each new screen reads the story and then the question, and one floating
+    Read to me button can replay the page (including answer choices). Speed: Slow or Normal.
   - Tapping a vocabulary word still opens the meaning, and also reads the word and definition.
   - Uses only the browser's built-in voices (Web Speech API). No downloads and no extra cost.
     Voice quality depends on the device. Some phones need one tap before the first auto-read.

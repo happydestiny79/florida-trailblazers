@@ -157,3 +157,44 @@
 @media (min-width: 720px) {
   .title-tile .portrait.avatar, .title-tile .portrait.med { width: 88px; height: 88px; }
 }
+
+
+/* v11 case picker and Case 2 coming-soon + journal tabs */
+.case-picker-modal .modal { max-width: 820px; }
+.case-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; text-align: left; }
+.case-card {
+  appearance: none; border: 3px solid #1d3557; border-radius: 18px; padding: 0 0 12px;
+  background: #fffbe6; color: #1d3557; cursor: pointer; display: flex; flex-direction: column;
+  box-shadow: 0 8px 0 #1d3557; overflow: hidden; text-align: left; font: inherit;
+}
+.case-card:hover, .case-card:focus { outline: 3px solid #e9c46a; transform: translateY(-2px); }
+.case-card-art { width: 100%; height: 140px; object-fit: cover; display: block; background: #264653; }
+.case-card-kicker { font-size: .75rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; padding: 8px 12px 0; color: #457b9d; }
+.case-card-title { font-size: 1.1rem; padding: 2px 12px; }
+.case-card-sub { font-size: .85rem; padding: 0 12px; color: #457b9d; }
+.case-card-blurb { font-size: .88rem; padding: 6px 12px 4px; line-height: 1.35; }
+.case-status { display: block; font-size: .75rem; font-weight: 700; padding: 0 12px; color: #2a9d8f; }
+@media (max-width: 640px) { .case-picker { grid-template-columns: 1fr; } .case-card-art { height: 160px; } }
+
+.coming-soon { margin: 12px 0; padding: 12px 14px; background: #fffbe6; border: 2px solid #1d3557; border-radius: 14px; }
+.soon-kicker { margin: 0 0 8px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #9b2226; font-size: .8rem; }
+.soon-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.soon-item { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; background: rgba(255,255,255,.7); border-radius: 10px; }
+.soon-ch { font-size: .75rem; font-weight: 800; color: #457b9d; }
+.soon-tease { font-size: .9rem; }
+
+.j-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; }
+.j-tab { appearance: none; border: 2px solid #1d3557; background: #fff; border-radius: 999px; padding: 6px 12px; font: inherit; font-size: .85rem; font-weight: 700; cursor: pointer; }
+.j-tab.is-on { background: #1d3557; color: #fffbe6; }
+/* Painted Tampa Bay explorer map (v11) */
+.map-svg.tampa-bay { background: #d9c39a; }
+.map-svg.tampa-bay .map-label { fill: #2a1c10; font-weight: 800; paint-order: stroke; stroke: #f7ecd2; stroke-width: 5px; }
+.map-svg.tampa-bay .map-water { fill: #123d4a; font-style: italic; font-weight: 700; paint-order: stroke; stroke: #e8f4f0; stroke-width: 4px; }
+.map-svg.tampa-bay .map-title { fill: #2a1c10; font-weight: 800; letter-spacing: 0.5px; paint-order: stroke; stroke: #f7ecd2; stroke-width: 5px; }
+.map-svg.tampa-bay .map-credit { fill: #5c3d1e; paint-order: stroke; stroke: #f7ecd2; stroke-width: 3px; }
+.map-svg.tampa-bay .map-key-btn { cursor: pointer; pointer-events: auto; }
+.map-svg.tampa-bay .map-key-btn text { pointer-events: none; fill: #5c3d1e; }
+.map-svg.tampa-bay .map-legend-pop { opacity: 0; pointer-events: none; transition: opacity .15s ease; }
+.map-svg.tampa-bay .map-legend-pop.is-open { opacity: 1; pointer-events: auto; }
+.map-svg.tampa-bay .map-pin { pointer-events: none; }
+
